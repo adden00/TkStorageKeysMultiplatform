@@ -6,7 +6,7 @@
     <application
         android:icon="@mipmap/ic_launcher"
         android:name=".TkStorageApp"
-        android:label="TkStorageKeysMultiplatform"
+        android:label="Склад"
         android:theme="@android:style/Theme.Material.NoActionBar">
         <activity
             android:name=".AppActivity"
