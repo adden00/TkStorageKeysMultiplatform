@@ -27,4 +27,5 @@ Run iOS simulator UI tests: `./gradlew :composeApp:iosSimulatorArm64Test`
 ### Wasm Browser (Alpha)
 Run the browser application: `./gradlew :composeApp:wasmJsBrowserDevelopmentRun --continue`
 Run browser UI tests: `./gradlew :composeApp:wasmJsBrowserTest`
+Distribute: `./gradlew composeApp:wasmJsBrowserDistribution`
 
