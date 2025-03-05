@@ -9,7 +9,7 @@ import com.adden00.tkstoragekeys.theme.GoogleSheetAppTheme
 internal fun App() = GoogleSheetAppTheme {
     GoogleSheetAppTheme {
         Navigator(
-            screen = Screens.EnterPassword
+            screen = Screens.Reception
         )
     }
 }
