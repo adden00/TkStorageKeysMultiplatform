@@ -58,7 +58,6 @@ class StorageApiService(
             parameters.append("type", type)
         }
         val response = api.post(url.buildString()) {
-            headers.append("mode", "no-cors")
             contentType(ContentType.Application.Json)
             setBody(item)
         }
