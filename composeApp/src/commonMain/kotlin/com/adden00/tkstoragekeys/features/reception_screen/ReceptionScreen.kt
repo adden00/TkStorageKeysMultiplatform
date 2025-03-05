@@ -171,7 +171,7 @@ fun ReceptionScreen(
                                             Screens.AddNewEquip(
                                                 startItem = EquipItem(
                                                     id = id,
-                                                    location = Res.string.new_storage.toString()
+                                                    location = newStorageString
                                                 )
                                             )
                                         )
