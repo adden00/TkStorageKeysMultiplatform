@@ -2,12 +2,12 @@ package com.adden00.tkstoragekeys.features.add_equip_screen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.adden00.tkstoragekeys.utils.DateUtils
 import com.adden00.tkstoragekeys.data.EquipNotFoundException
 import com.adden00.tkstoragekeys.data.StorageRepository
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEffect
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEvent
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenState
+import com.adden00.tkstoragekeys.utils.DateUtils
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -112,14 +112,11 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
             }
 
             is NewEquipScreenEvent.FillStartFields -> {
-                if (!viewState.value.isStartDataFilled) {
-                    _viewState.update {
-                        it.copy(
-                            enteredItem = viewEvent.item,
-                            isStartDataFilled = true,
-                            updatingItemId = viewEvent.editingItemId
-                        )
-                    }
+                _viewState.update {
+                    it.copy(
+                        enteredItem = viewEvent.item,
+                        updatingItemId = viewEvent.editingItemId
+                    )
                 }
             }
         }

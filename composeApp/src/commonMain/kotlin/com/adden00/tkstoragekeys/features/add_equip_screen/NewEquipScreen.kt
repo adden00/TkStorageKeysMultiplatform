@@ -23,7 +23,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -53,7 +55,10 @@ import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
-import org.koin.viewmodel.resolveViewModel
+import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
+import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,8 +67,9 @@ fun NewEquipScreen(
     startItemFilled: EquipItem,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
     navigator: Navigator = LocalNavigator.currentOrThrow,
-    viewModel: NewEquipViewModel =  NewEquipViewModel()
 ) {
+
+    val viewModel: NewEquipViewModel = koinViewModel()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
@@ -84,6 +90,8 @@ fun NewEquipScreen(
     }
 
     LaunchedEffect("start state") {
+        println("LaunchedEffect(\"start state\") {")
+        println(startItemFilled.toString())
         viewModel.obtainEvent(NewEquipScreenEvent.FillStartFields(editingItemId = editingItemId, item = startItemFilled))
     }
 
@@ -105,6 +113,20 @@ fun NewEquipScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedIconButton(
+                    onClick = {
+                        navigator.pop()
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_back),
+                        contentDescription = "back"
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+
                 OutlinedTextField(
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                     modifier = Modifier

@@ -67,8 +67,7 @@ kotlin {
 
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
-            implementation(libs.koin.viewmodel)
-//            implementation(libs.koin.androidx.compose)
+            implementation(libs.koin.compose.viewmodel)
 
             implementation(libs.multiplatformSettings)
             implementation(libs.kotlinx.datetime)

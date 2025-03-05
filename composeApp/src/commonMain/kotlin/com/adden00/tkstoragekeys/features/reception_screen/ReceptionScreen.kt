@@ -36,7 +36,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -51,7 +50,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.common.Constants
-import com.adden00.tkstoragekeys.utils.DateUtils
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
@@ -67,12 +65,10 @@ import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkRed
 import com.adden00.tkstoragekeys.theme.TkWhite
 import com.adden00.tkstoragekeys.theme.TkYellow
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.jetbrains.compose.resources.getString
+import com.adden00.tkstoragekeys.utils.DateUtils
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
@@ -83,10 +79,12 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 fun ReceptionScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
-    viewModel: ReceptionViewModel = ReceptionViewModel(),
     resultItem: State<EquipItem?> = navigatorExtension.getResult<EquipItem>("KEY"),
-    coroutineScope: CoroutineScope = rememberCoroutineScope { Dispatchers.Main }
 ) {
+    val viewModel: ReceptionViewModel = koinViewModel()
+
+    val storageString = stringResource(Res.string.storage)
+    val newStorageString = stringResource(Res.string.new_storage)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
@@ -117,15 +115,15 @@ fun ReceptionScreen(
                 shape = CircleShape,
                 containerColor = TkMain,
                 onClick = {
-                    coroutineScope.launch {
+//                    coroutineScope.launch {
                         navigator.push(
                             Screens.AddNewEquip(
                                 startItem = EquipItem(
-                                    location = getString(Res.string.new_storage)
+                                    location = newStorageString
                                 )
                             )
                         )
-                    }
+//                    }
                 }) {
                 Text("+", style = TextStyle(fontSize = 24.sp))
             }
@@ -420,13 +418,11 @@ fun ReceptionScreen(
                         Button(
                             onClick = {
                                 state.value.currentEquipItem?.let { equipItem ->
-                                    coroutineScope.launch {
-
                                     viewModel.obtainEvent(
                                         ReceptionScreenEvent.UpdateInfo(
                                             equipItem.id,
                                             equipItem.copy(
-                                                location = getString(Res.string.storage),
+                                                location = storageString,
                                                 event = "",
                                                 date = DateUtils.getCurrentDate()
                                             ),
@@ -434,7 +430,6 @@ fun ReceptionScreen(
                                         )
                                     )
                                     }
-                                }
                             },
                             shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                             enabled = state.value.currentEquipItem != null && !state.value.isBusy(),
@@ -495,20 +490,17 @@ fun ReceptionScreen(
                     Button(
                         onClick = {
                             state.value.currentEquipItem?.let { equipItem ->
-                                coroutineScope.launch {
-
                                 viewModel.obtainEvent(
                                     ReceptionScreenEvent.UpdateInfo(
                                         equipItem.id,
                                         equipItem.copy(
-                                            location = getString(Res.string.new_storage),
+                                            location = newStorageString,
                                             event = "",
                                             date = DateUtils.getCurrentDate()
                                         ),
                                         updateType = UpdateType.MOVING_NO_NEW_STORAGE
                                     )
                                 )
-                                }
                             }
                         },
                         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
