@@ -13,9 +13,17 @@ import cafe.adriel.voyager.navigator.lifecycle.NavigatorDisposable
 import cafe.adriel.voyager.navigator.lifecycle.NavigatorLifecycleStore
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
+import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 
 object Screens {
+
+    object EnterPassword : Screen {
+        @Composable
+        override fun Content() {
+            EnterPasswordScreen()
+        }
+    }
 
     object Reception : Screen {
         @Composable
