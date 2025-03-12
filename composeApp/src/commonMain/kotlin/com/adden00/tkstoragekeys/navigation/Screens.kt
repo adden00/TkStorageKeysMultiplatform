@@ -15,6 +15,7 @@ import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
 import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
+import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
 
 object Screens {
 
@@ -39,6 +40,13 @@ object Screens {
         @Composable
         override fun Content() {
             NewEquipScreen(editingItemId, startItem)
+        }
+    }
+
+    object Tutorial : Screen {
+        @Composable
+        override fun Content() {
+            TutorialScreen()
         }
     }
 }
