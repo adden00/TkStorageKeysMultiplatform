@@ -24,6 +24,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -116,13 +117,13 @@ fun ReceptionScreen(
                 containerColor = TkMain,
                 onClick = {
 //                    coroutineScope.launch {
-                        navigator.push(
-                            Screens.AddNewEquip(
-                                startItem = EquipItem(
-                                    location = newStorageString
-                                )
+                    navigator.push(
+                        Screens.AddNewEquip(
+                            startItem = EquipItem(
+                                location = newStorageString
                             )
                         )
+                    )
 //                    }
                 }) {
                 Text("+", style = TextStyle(fontSize = 24.sp))
@@ -192,12 +193,25 @@ fun ReceptionScreen(
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                "Поиск и выдача снаряжения",
-                style = TextStyle(
-                    fontSize = 18.sp
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
+            ) {
+                Text(
+                    modifier = Modifier.weight(1f),
+                    text = "Поиск и выдача снаряжения",
+                    style = TextStyle(
+                        fontSize = 18.sp
+                    )
                 )
-            )
+                Spacer(modifier = Modifier.width(8.dp))
+                OutlinedButton(
+                    onClick = {
+                        navigator.push(Screens.Tutorial)
+                    }
+                ) {
+                    Text("Памятка")
+                }
+            }
 
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -429,7 +443,7 @@ fun ReceptionScreen(
                                             updateType = UpdateType.RETURNING
                                         )
                                     )
-                                    }
+                                }
                             },
                             shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                             enabled = state.value.currentEquipItem != null && !state.value.isBusy(),
