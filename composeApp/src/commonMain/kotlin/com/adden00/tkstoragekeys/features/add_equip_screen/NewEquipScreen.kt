@@ -52,6 +52,7 @@ import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEff
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEvent
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
 import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
+import com.adden00.tkstoragekeys.theme.Dimens
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
@@ -111,7 +112,7 @@ fun NewEquipScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = Dimens.PaddingHorizontal)
             ) {
                 Spacer(modifier = Modifier.width(8.dp))
                 OutlinedIconButton(
@@ -194,7 +195,7 @@ fun NewEquipScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = Dimens.PaddingHorizontal)
             ) {
                 ExposedDropdownMenuBox(
                     expanded = categoryExpanded.value,
@@ -240,7 +241,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.brand,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(brand = it)))
@@ -262,7 +263,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.name,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(name = it)))
@@ -284,7 +285,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.color,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(color = it)))
@@ -306,7 +307,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.weigh,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(weigh = it)))
@@ -336,7 +337,7 @@ fun NewEquipScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = Dimens.PaddingHorizontal)
             ) {
                 ExposedDropdownMenuBox(
                     expanded = qualityExpanded.value,
@@ -382,7 +383,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.location,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(location = it)))
@@ -404,7 +405,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.event,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(event = it)))
@@ -426,7 +427,7 @@ fun NewEquipScreen(
             OutlinedTextField(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.info,
                 onValueChange = {
                     viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(info = it)))
