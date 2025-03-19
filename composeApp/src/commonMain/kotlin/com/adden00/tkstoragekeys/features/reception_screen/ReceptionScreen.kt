@@ -200,7 +200,8 @@ fun ReceptionScreen(
                     modifier = Modifier.weight(1f),
                     text = "Поиск и выдача снаряжения",
                     style = TextStyle(
-                        fontSize = 18.sp
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Center
                     )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
