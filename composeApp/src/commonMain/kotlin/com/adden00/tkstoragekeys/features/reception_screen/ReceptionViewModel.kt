@@ -32,6 +32,8 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
     fun obtainEvent(viewEvent: ReceptionScreenEvent) {
         when (viewEvent) {
             is ReceptionScreenEvent.GetInfo -> {
+                if (viewState.value.isSearching) return
+
                 _viewState.update { it.copy(isSearching = true) }
                 viewModelScope.launch {
                     try {

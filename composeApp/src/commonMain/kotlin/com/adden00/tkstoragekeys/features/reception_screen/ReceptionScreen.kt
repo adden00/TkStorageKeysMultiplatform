@@ -60,6 +60,7 @@ import com.adden00.tkstoragekeys.features.reception_screen.mvi.UpdateType
 import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
 import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
+import com.adden00.tkstoragekeys.theme.Dimens
 import com.adden00.tkstoragekeys.theme.TkDark
 import com.adden00.tkstoragekeys.theme.TkGreen
 import com.adden00.tkstoragekeys.theme.TkGrey
@@ -75,7 +76,6 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
-import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
 @Composable
 fun ReceptionScreen(
@@ -85,7 +85,6 @@ fun ReceptionScreen(
 ) {
     val viewModel: ReceptionViewModel = koinViewModel()
 
-    val storageString = stringResource(Res.string.storage)
     val newStorageString = stringResource(Res.string.new_storage)
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -178,7 +177,7 @@ fun ReceptionScreen(
                                             )
                                         )
                                     }) {
-                                    Text("Добваить")
+                                    Text("Добавить")
                                 }
                             }
                         }
@@ -195,7 +194,7 @@ fun ReceptionScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal)
             ) {
                 Text(
                     modifier = Modifier.weight(1f),
@@ -220,7 +219,7 @@ fun ReceptionScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 32.dp),
+                    .padding(horizontal = Dimens.PaddingHorizontal),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
@@ -289,25 +288,25 @@ fun ReceptionScreen(
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = Dimens.PaddingHorizontal),
                         text = equipItem.id,
                         style = TextStyle(fontSize = 22.sp)
                     )
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp), text = equipItem.name
+                            .padding(horizontal = Dimens.PaddingHorizontal), text = equipItem.name
                     )
 
                     Text(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp), text = "Производитель: ${equipItem.brand.ifEmpty { "неизвестно" }}"
+                            .padding(horizontal = Dimens.PaddingHorizontal), text = "Производитель: ${equipItem.brand.ifEmpty { "неизвестно" }}"
                     )
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = Dimens.PaddingHorizontal),
                     ) {
                         Text(
                             text = "Состояние: ",
@@ -330,7 +329,7 @@ fun ReceptionScreen(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = Dimens.PaddingHorizontal),
                     ) {
                         Text(
                             text = "Местоположение: ",
@@ -353,7 +352,7 @@ fun ReceptionScreen(
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp), text = "мероприятие: ${equipItem.event}"
+                                .padding(horizontal = Dimens.PaddingHorizontal), text = "мероприятие: ${equipItem.event}"
                         )
                     }
 
@@ -361,7 +360,7 @@ fun ReceptionScreen(
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 16.dp),
+                                .padding(horizontal = Dimens.PaddingHorizontal),
                             style = TextStyle(fontStyle = FontStyle.Italic),
                             text = "примечания: ${equipItem.info}"
                         )
@@ -373,7 +372,7 @@ fun ReceptionScreen(
                             .clickable {
                                 navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = equipItem))
                             }
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
+                            .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
                         style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
                         text = stringResource(Res.string.edit)
                     )
@@ -395,7 +394,7 @@ fun ReceptionScreen(
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 32.dp),
+                            .padding(horizontal = Dimens.PaddingHorizontal),
                         value = state.value.enteredLocationText,
                         onValueChange = {
                             viewModel.obtainEvent(ReceptionScreenEvent.OnLocationTextChanged(it))
@@ -414,7 +413,7 @@ fun ReceptionScreen(
                     OutlinedTextField(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 32.dp),
+                            .padding(horizontal = Dimens.PaddingHorizontal),
                         value = state.value.enteredEventText,
 
                         onValueChange = {
@@ -438,24 +437,24 @@ fun ReceptionScreen(
                                         ReceptionScreenEvent.UpdateInfo(
                                             equipItem.id,
                                             equipItem.copy(
-                                                location = storageString,
+                                                location = newStorageString,
                                                 event = "",
                                                 date = DateUtils.getCurrentDate()
                                             ),
-                                            updateType = UpdateType.RETURNING
+                                            updateType = UpdateType.MOVING_NO_NEW_STORAGE
                                         )
                                     )
                                 }
                             },
                             shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                            enabled = state.value.currentEquipItem != null && !state.value.isBusy(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = TkGreen,
-                                disabledContainerColor = TkGreen.copy(alpha = 0.8f)
-                            )
+                                containerColor = TkMain,
+                                disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                            ),
+                            enabled = state.value.currentEquipItem != null && !state.value.isBusy()
                         ) {
-                            Text("на склад")
-                            if (state.value.isReturning) {
+                            Text("на новый склад")
+                            if (state.value.isMovingToNewStorage) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(18.dp),
@@ -464,7 +463,6 @@ fun ReceptionScreen(
                                 )
                             }
                         }
-
 
                         Spacer(modifier = Modifier.width(8.dp))
 
@@ -500,40 +498,6 @@ fun ReceptionScreen(
                                     strokeWidth = 2.dp
                                 )
                             }
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            state.value.currentEquipItem?.let { equipItem ->
-                                viewModel.obtainEvent(
-                                    ReceptionScreenEvent.UpdateInfo(
-                                        equipItem.id,
-                                        equipItem.copy(
-                                            location = newStorageString,
-                                            event = "",
-                                            date = DateUtils.getCurrentDate()
-                                        ),
-                                        updateType = UpdateType.MOVING_NO_NEW_STORAGE
-                                    )
-                                )
-                            }
-                        },
-                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = TkMain,
-                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                        ),
-                        enabled = state.value.currentEquipItem != null && !state.value.isBusy()
-                    ) {
-                        Text("на новый склад")
-                        if (state.value.isMovingToNewStorage) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = TkWhite,
-                                strokeWidth = 2.dp
-                            )
                         }
                     }
                 }
