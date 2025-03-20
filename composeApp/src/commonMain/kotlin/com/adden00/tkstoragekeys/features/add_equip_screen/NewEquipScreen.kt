@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.adden00.tkstoragekeys.common.Constants
+import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEffect
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEvent

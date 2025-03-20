@@ -40,15 +40,20 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                         val equipItem = storageRepository.getItemFromTable(id = viewEvent.id)
                         _viewState.update { it.copy(currentEquipItem = equipItem, error = "", enteredSearchText = "") }
                     } catch (e: EquipNotFoundException) {
-                        _viewEffect.send(ReceptionScreenEffect.ShowToast("${viewEvent.id} не найдено!"))
-                        _viewState.update {
-                            it.copy(
-                                currentEquipItem = null,
-                                error = "",
-                                enteredSearchText = "",
-                                isNumberNoxExistsShown = true,
-                                notFoundedId = viewEvent.id
-                            )
+                        if (!e.message.isNullOrEmpty()) {
+                            _viewEffect.send(ReceptionScreenEffect.ShowToast(e.message))
+                            _viewState.update { it.copy(currentEquipItem = null, error = "", enteredSearchText = "") }
+                        } else {
+                            _viewEffect.send(ReceptionScreenEffect.ShowToast("${viewEvent.id} не найдено!"))
+                            _viewState.update {
+                                it.copy(
+                                    currentEquipItem = null,
+                                    error = "",
+                                    enteredSearchText = "",
+                                    isNumberNoxExistsShown = true,
+                                    notFoundedId = viewEvent.id
+                                )
+                            }
                         }
                     } catch (e: Exception) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
@@ -77,7 +82,11 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                         val newItem = storageRepository.updateItem(id = viewEvent.id, item = viewEvent.newItem)
                         _viewState.update { it.copy(currentEquipItem = newItem, enteredSearchText = "", error = "") }
                     } catch (e: EquipNotFoundException) {
-                        _viewEffect.send(ReceptionScreenEffect.ShowToast("${viewEvent.id} не найдено!"))
+                        if (!e.message.isNullOrEmpty()) {
+                            _viewEffect.send(ReceptionScreenEffect.ShowToast(e.message))
+                        } else {
+                            _viewEffect.send(ReceptionScreenEffect.ShowToast("${viewEvent.id} не найдено!"))
+                        }
                         _viewState.update { it.copy(currentEquipItem = null, error = "", enteredSearchText = "") }
                     } catch (e: Exception) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))

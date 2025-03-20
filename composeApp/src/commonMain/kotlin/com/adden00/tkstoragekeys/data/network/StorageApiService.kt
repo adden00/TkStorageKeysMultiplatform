@@ -1,5 +1,6 @@
 package com.adden00.tkstoragekeys.data.network
 
+import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import io.ktor.client.HttpClient
@@ -22,29 +23,33 @@ class StorageApiService(
 
     suspend fun getItem(
         id: String,
-        type: String = "get"
+        type: String = "get",
+        versionCode: String = Constants.VERSION_CODE.toString(),
     ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("id", id)
             parameters.append("type", type)
+            parameters.append("versionCode", versionCode)
         }
         val response = api.post(url.buildString())
         return runRedirect(response)
     }
 
     suspend fun getFreeId(
-        type: String = "getFreeId"
+        type: String = "getFreeId",
+        versionCode: String = Constants.VERSION_CODE.toString(),
     ): IdResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("type", type)
+            parameters.append("versionCode", versionCode)
         }
         val response = api.post(url.buildString())
         return runRedirect(response)
     }
 
     suspend fun updateItem(
+        keyholderName: String,
         id: String,
-
         itemId: String,
         category: String,
         brand: String,
@@ -57,11 +62,12 @@ class StorageApiService(
         info: String,
         date: String,
         type: String = "update",
+        versionCode: String = Constants.VERSION_CODE.toString(),
     ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
+            parameters.append("keyholderName", keyholderName)
             parameters.append("id", id)
             parameters.append("type", type)
-
             parameters.append("itemId", itemId)
             parameters.append("category", category)
             parameters.append("brand", brand)
@@ -73,6 +79,7 @@ class StorageApiService(
             parameters.append("event", event)
             parameters.append("date", date)
             parameters.append("info", info)
+            parameters.append("versionCode", versionCode)
         }
         val response = api.post(url.buildString())
         return runRedirect(response)
@@ -80,6 +87,7 @@ class StorageApiService(
     }
 
     suspend fun addItem(
+        keyholderName: String,
         id: String,
         itemId: String,
         category: String,
@@ -93,11 +101,13 @@ class StorageApiService(
         info: String,
         date: String,
         type: String = "add",
-    ): EquipResponse {
+        versionCode: String = Constants.VERSION_CODE.toString(),
+
+        ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
+            parameters.append("keyholderName", keyholderName)
             parameters.append("id", id)
             parameters.append("type", type)
-
             parameters.append("itemId", itemId)
             parameters.append("category", category)
             parameters.append("brand", brand)
@@ -109,6 +119,7 @@ class StorageApiService(
             parameters.append("event", event)
             parameters.append("date", date)
             parameters.append("info", info)
+            parameters.append("versionCode", versionCode)
         }
         val response = api.post(url.buildString())
         return runRedirect(response)
