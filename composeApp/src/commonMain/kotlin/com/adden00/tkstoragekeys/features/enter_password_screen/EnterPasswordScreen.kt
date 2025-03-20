@@ -118,6 +118,7 @@ fun EnterPasswordScreen(
                         containerColor = TkMain,
                         disabledContainerColor = TkMain.copy(alpha = 0.8f)
                     ),
+                    enabled = nameEditText.value.isNotEmpty(),
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                 ) {
                     Text(
