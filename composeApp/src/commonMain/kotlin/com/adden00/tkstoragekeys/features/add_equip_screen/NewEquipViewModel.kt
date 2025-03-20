@@ -37,18 +37,23 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                     try {
                         val id = viewState.value.enteredItem.id
                         if (id.isEmpty()) {
-                            throw EquipNotFoundException
+                            throw EquipNotFoundException()
                         }
                         val equipItem = storageRepository.addItem(id = id, item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate()))
                         if (equipItem.id.isNotEmpty()) {
                             _viewEffect.send(NewEquipScreenEffect.NavigateBack(equipItem))
                         } else {
-                            throw EquipNotFoundException
+                            throw EquipNotFoundException()
                         }
                     } catch (e: EquipNotFoundException) {
-                        _viewEffect.send(
-                            NewEquipScreenEffect.ShowToast("Ошибка добавления! Возможно этот номер уже существует! Проверьте данные и повторите попытку")
-                        )
+                        if (!e.message.isNullOrEmpty()) {
+                            _viewEffect.send(NewEquipScreenEffect.ShowToast(e.message))
+                        } else {
+                            _viewEffect.send(
+                                NewEquipScreenEffect.ShowToast("Ошибка добавления! Возможно этот номер уже существует! Проверьте данные и повторите попытку")
+                            )
+                        }
+
                     } catch (e: Exception) {
                         _viewEffect.send(NewEquipScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
@@ -71,11 +76,15 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                     try {
                         val id = storageRepository.getFreeId()
                         if (id.isEmpty()) {
-                            throw EquipNotFoundException
+                            throw EquipNotFoundException()
                         }
                         _viewState.update { it.copy(enteredItem = viewState.value.enteredItem.copy(id = id)) }
                     } catch (e: EquipNotFoundException) {
-                        _viewEffect.send(NewEquipScreenEffect.ShowToast("Ошибка получения свободного id! повторите попытку или добавьте id вручную"))
+                        if (!e.message.isNullOrEmpty()) {
+                            _viewEffect.send(NewEquipScreenEffect.ShowToast(e.message))
+                        } else {
+                            _viewEffect.send(NewEquipScreenEffect.ShowToast("Ошибка получения свободного id! повторите попытку или добавьте id вручную"))
+                        }
                     } catch (e: Exception) {
                         _viewEffect.send(NewEquipScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
@@ -90,19 +99,23 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                     try {
                         val id = viewEvent.id
                         if (id.isEmpty()) {
-                            throw EquipNotFoundException
+                            throw EquipNotFoundException()
                         }
                         val equipItem =
                             storageRepository.updateItem(id = id, item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate()))
                         if (equipItem.id.isNotEmpty()) {
                             _viewEffect.send(NewEquipScreenEffect.NavigateBack(equipItem))
                         } else {
-                            throw EquipNotFoundException
+                            throw EquipNotFoundException()
                         }
                     } catch (e: EquipNotFoundException) {
-                        _viewEffect.send(
-                            NewEquipScreenEffect.ShowToast("Ошибка Изменения номера! Такой номер уже существует!")
-                        )
+                        if (!e.message.isNullOrEmpty()) {
+                            _viewEffect.send(NewEquipScreenEffect.ShowToast(e.message))
+                        } else {
+                            _viewEffect.send(
+                                NewEquipScreenEffect.ShowToast("Ошибка Изменения номера! Такой номер уже существует!")
+                            )
+                        }
                     } catch (e: Exception) {
                         _viewEffect.send(NewEquipScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {

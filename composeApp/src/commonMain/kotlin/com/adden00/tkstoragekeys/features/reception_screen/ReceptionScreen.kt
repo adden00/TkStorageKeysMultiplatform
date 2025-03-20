@@ -51,7 +51,7 @@ import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.adden00.tkstoragekeys.common.Constants
+import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
@@ -116,7 +116,6 @@ fun ReceptionScreen(
                 shape = CircleShape,
                 containerColor = TkMain,
                 onClick = {
-//                    coroutineScope.launch {
                     navigator.push(
                         Screens.AddNewEquip(
                             startItem = EquipItem(
@@ -124,7 +123,6 @@ fun ReceptionScreen(
                             )
                         )
                     )
-//                    }
                 }) {
                 Text("+", style = TextStyle(fontSize = 24.sp))
             }
