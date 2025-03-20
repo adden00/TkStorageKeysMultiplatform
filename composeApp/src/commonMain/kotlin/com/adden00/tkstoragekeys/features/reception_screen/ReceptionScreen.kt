@@ -25,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -51,7 +52,8 @@ import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.adden00.tkstoragekeys.common.Constants
+import com.adden00.tkstoragekeys.Constants
+import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
@@ -71,9 +73,11 @@ import com.adden00.tkstoragekeys.theme.TkYellow
 import com.adden00.tkstoragekeys.utils.DateUtils
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
 
@@ -82,6 +86,7 @@ fun ReceptionScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
     resultItem: State<EquipItem?> = navigatorExtension.getResult<EquipItem>("KEY"),
+    appSettings: AppSettings = koinInject()
 ) {
     val viewModel: ReceptionViewModel = koinViewModel()
 
@@ -116,7 +121,6 @@ fun ReceptionScreen(
                 shape = CircleShape,
                 containerColor = TkMain,
                 onClick = {
-//                    coroutineScope.launch {
                     navigator.push(
                         Screens.AddNewEquip(
                             startItem = EquipItem(
@@ -124,7 +128,6 @@ fun ReceptionScreen(
                             )
                         )
                     )
-//                    }
                 }) {
                 Text("+", style = TextStyle(fontSize = 24.sp))
             }
@@ -196,6 +199,18 @@ fun ReceptionScreen(
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal)
             ) {
+                OutlinedIconButton(
+                    onClick = {
+                        appSettings.keyHolderName = ""
+                        navigator.replace(Screens.EnterPassword)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(Res.drawable.ic_log_out),
+                        contentDescription = "back"
+                    )
+                }
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     modifier = Modifier.weight(1f),
                     text = "Поиск и выдача снаряжения",

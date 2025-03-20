@@ -6,7 +6,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class EquipResponse(
     @SerialName("success") val success: Boolean,
-    @SerialName("equipItem") val equipItem: EquipDto? = null
+    @SerialName("equipItem") val equipItem: EquipDto? = null,
+    @SerialName("message") val message: String? = null,
+
 )
 
 @Serializable

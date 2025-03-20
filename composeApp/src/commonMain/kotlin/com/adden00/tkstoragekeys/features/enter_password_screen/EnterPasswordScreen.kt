@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,21 +29,33 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.adden00.tkstoragekeys.common.Constants
+import com.adden00.tkstoragekeys.Constants
+import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
+import com.adden00.tkstoragekeys.utils.Platform
+import com.adden00.tkstoragekeys.utils.getPlatform
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
 
 @Composable
 fun EnterPasswordScreen(
-    navigator: Navigator = LocalNavigator.currentOrThrow
+    navigator: Navigator = LocalNavigator.currentOrThrow,
+    appSettings: AppSettings = koinInject()
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
 
+    val nameEditText = remember { mutableStateOf("") }
     val passwordEditText = remember { mutableStateOf("") }
+
+    LaunchedEffect("checkName") {
+        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
+            navigator.replace(Screens.Reception)
+        }
+    }
 
     Scaffold(modifier = Modifier
         .fillMaxSize()
@@ -56,25 +69,44 @@ fun EnterPasswordScreen(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 OutlinedTextField(
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                    value = passwordEditText.value,
+                    value = nameEditText.value,
                     onValueChange = {
-                        passwordEditText.value = it
+                        nameEditText.value = it
                     },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Done
-                    ),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedLabelColor = TkGrey
                     ),
                     label = {
-                        Text("Введите ключ")
+                        Text("Введите Фамилию ключника")
                     }
                 )
+
+                if (getPlatform() == Platform.WEB) {
+                    OutlinedTextField(
+                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
+                        value = passwordEditText.value,
+                        onValueChange = {
+                            passwordEditText.value = it
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Done
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedLabelColor = TkGrey
+                        ),
+                        label = {
+                            Text("Введите ключ")
+                        }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
+
                 Button(
                     onClick = {
-                        if (passwordEditText.value == KEY) {
+                        if (passwordEditText.value == KEY || getPlatform() != Platform.WEB) {
+                            appSettings.keyHolderName = nameEditText.value
                             navigator.replace(Screens.Reception)
                         } else {
                             CoroutineScope(Dispatchers.Main).launch {
@@ -86,6 +118,7 @@ fun EnterPasswordScreen(
                         containerColor = TkMain,
                         disabledContainerColor = TkMain.copy(alpha = 0.8f)
                     ),
+                    enabled = nameEditText.value.isNotEmpty(),
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                 ) {
                     Text(
