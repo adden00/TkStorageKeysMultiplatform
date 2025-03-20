@@ -81,7 +81,6 @@ fun EnterPasswordScreen(
                     }
                 )
 
-                if (getPlatform() == Platform.WEB) {
                     OutlinedTextField(
                         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                         value = passwordEditText.value,
@@ -99,13 +98,12 @@ fun EnterPasswordScreen(
                             Text("Введите ключ")
                         }
                     )
-                }
 
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
                     onClick = {
-                        if (passwordEditText.value == KEY || getPlatform() != Platform.WEB) {
+                        if (passwordEditText.value == KEY) {
                             appSettings.keyHolderName = nameEditText.value
                             navigator.replace(Screens.Reception)
                         } else {
