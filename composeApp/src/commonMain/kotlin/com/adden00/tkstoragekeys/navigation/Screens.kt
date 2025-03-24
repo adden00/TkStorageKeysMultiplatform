@@ -16,6 +16,7 @@ import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
 import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
+import kotlin.jvm.Transient
 
 object Screens {
 
@@ -35,6 +36,7 @@ object Screens {
 
     data class AddNewEquip(
         val editingItemId: String = "",
+        @Transient
         val startItem: EquipItem,
     ) : Screen {
         @Composable
