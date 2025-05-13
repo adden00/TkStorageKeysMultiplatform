@@ -55,6 +55,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.Quality
+import com.adden00.tkstoragekeys.data.model.isOnStorage
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenState
@@ -327,14 +329,15 @@ fun ReceptionScreen(
                             text = "Состояние: ",
                         )
                         Text(
-                            text = equipItem.quality,
+                            text = equipItem.quality?.value.orEmpty(),
                             style = TextStyle(
                                 color = when (state.value.currentEquipItem?.quality) {
-                                    "отличное" -> TkGreen
-                                    "Среднее" -> TkYellow
-                                    "Хорошее" -> TkGrey
-                                    "На списание" -> TkRed
-                                    else -> TkGreen
+                                    Quality.BEST -> TkGreen
+                                    Quality.GOOD -> TkGrey
+                                    Quality.MEDIUM -> TkYellow
+                                    Quality.TO_WRITE_OFF -> TkRed
+                                    Quality.WRITE_OFF -> TkRed
+                                    null -> TkGreen
                                 },
                                 fontSize = 18.sp,
                                 textDecoration = TextDecoration.Underline
@@ -466,7 +469,9 @@ fun ReceptionScreen(
                                 containerColor = TkMain,
                                 disabledContainerColor = TkMain.copy(alpha = 0.8f)
                             ),
-                            enabled = state.value.currentEquipItem != null && !state.value.isBusy()
+                            enabled = state.value.currentEquipItem?.let {
+                                !state.value.isBusy() && !it.isOnStorage()
+                            } ?: false
                         ) {
                             Text("на новый склад")
                             if (state.value.isMovingToNewStorage) {

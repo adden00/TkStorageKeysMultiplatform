@@ -48,6 +48,8 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.Quality
+import com.adden00.tkstoragekeys.data.model.extractQuality
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEffect
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEvent
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
@@ -327,13 +329,8 @@ fun NewEquipScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
             val qualityExpanded = remember { mutableStateOf(false) }
-            val qualities = listOf(
-                "Отличное",
-                "Хорошее",
-                "Среднее",
-                "На списание",
-                "Списано",
-            )
+            val qualities = Quality.entries.map { it.value }
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -346,7 +343,7 @@ fun NewEquipScreen(
                     }
                 ) {
                     OutlinedTextField(
-                        value = state.value.enteredItem.quality,
+                        value = state.value.enteredItem.quality?.value.orEmpty(),
                         onValueChange = {},
                         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -366,11 +363,15 @@ fun NewEquipScreen(
                         expanded = qualityExpanded.value,
                         onDismissRequest = { qualityExpanded.value = false }
                     ) {
-                        qualities.forEach { category ->
+                        qualities.forEach { quality ->
                             DropdownMenuItem(
-                                text = { Text(text = category) },
+                                text = { Text(text = quality) },
                                 onClick = {
-                                    viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(item = state.value.enteredItem.copy(quality = category)))
+                                    viewModel.obtainEvent(
+                                        NewEquipScreenEvent.OnEnteredItemChange(
+                                            item = state.value.enteredItem.copy(quality = quality.extractQuality())
+                                        )
+                                    )
                                     qualityExpanded.value = false
                                 }
                             )
