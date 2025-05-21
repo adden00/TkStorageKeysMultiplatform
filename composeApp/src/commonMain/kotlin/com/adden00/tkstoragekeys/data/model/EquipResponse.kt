@@ -12,6 +12,14 @@ data class EquipResponse(
     )
 
 @Serializable
+data class EquipsResponse(
+    @SerialName("success") val success: Boolean,
+    @SerialName("items") val items: List<EquipDto> = listOf(),
+    @SerialName("message") val message: String? = null,
+
+    )
+
+@Serializable
 data class EquipDto(
     @SerialName("id") val id: String = "",
     @SerialName("category") val category: String = "",

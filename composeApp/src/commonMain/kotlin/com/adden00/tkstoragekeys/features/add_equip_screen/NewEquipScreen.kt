@@ -123,6 +123,7 @@ fun NewEquipScreen(
                     }
                 ) {
                     Icon(
+                        modifier = Modifier.size(24.dp),
                         painter = painterResource(Res.drawable.ic_back),
                         contentDescription = "back"
                     )

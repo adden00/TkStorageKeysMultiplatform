@@ -80,6 +80,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
 
@@ -208,6 +209,7 @@ fun ReceptionScreen(
                     }
                 ) {
                     Icon(
+                        modifier = Modifier.size(24.dp),
                         painter = painterResource(Res.drawable.ic_log_out),
                         contentDescription = "back"
                     )
@@ -285,10 +287,32 @@ fun ReceptionScreen(
                         )
                     } else {
                         Icon(
+                            modifier = Modifier.size(24.dp),
                             painter = painterResource(Res.drawable.ic_search),
                             contentDescription = "search"
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    modifier = Modifier.size(48.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = TkMain,
+                        contentColor = TkWhite,
+                        disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                    ),
+                    onClick = {
+                        navigator.push(
+                            Screens.PeopleSearch
+                        )
+                    }) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(Res.drawable.ic_people_search),
+                        contentDescription = "search"
+                    )
+
                 }
             }
 

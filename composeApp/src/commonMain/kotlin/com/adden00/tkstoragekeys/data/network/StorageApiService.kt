@@ -2,6 +2,7 @@ package com.adden00.tkstoragekeys.data.network
 
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipResponse
+import com.adden00.tkstoragekeys.data.model.EquipsResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -28,6 +29,20 @@ class StorageApiService(
     ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("id", id)
+            parameters.append("type", type)
+            parameters.append("versionCode", versionCode)
+        }
+        val response = api.post(url.buildString())
+        return runRedirect(response)
+    }
+
+    suspend fun getItems(
+        query: String,
+        type: String = "search",
+        versionCode: String = Constants.VERSION_CODE.toString(),
+    ): EquipsResponse {
+        val url = URLBuilder("$baseUrl/$HASH/exec").apply {
+            parameters.append("query", query)
             parameters.append("type", type)
             parameters.append("versionCode", versionCode)
         }
