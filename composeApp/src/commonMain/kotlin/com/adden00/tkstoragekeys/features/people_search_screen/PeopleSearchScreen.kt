@@ -200,7 +200,7 @@ fun PeopleSearchScreen(
                         isLoading = state.value.isReturning,
                         enabled = !state.value.isBusy(),
                         onReturnButtonClick = {
-                            viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = newStorageString)))
+                            viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = newStorageString, event = "")))
                         }
                     )
                 }
