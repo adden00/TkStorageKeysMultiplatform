@@ -17,6 +17,7 @@ Run android UI tests on the connected device: `./gradlew :composeApp:connectedDe
 ### Desktop
 Run the desktop application: `./gradlew :composeApp:run`
 Run desktop UI tests: `./gradlew :composeApp:jvmTest`
+dist - `./gradlew :composeApp:packageDistributionForCurrentOS`
 
 ### iOS
 To run the application on iPhone device/simulator:
