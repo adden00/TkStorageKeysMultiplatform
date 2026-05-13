@@ -35,11 +35,10 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                 _viewState.update { it.copy(isAdding = true) }
                 viewModelScope.launch {
                     try {
-                        val id = viewState.value.enteredItem.id
-                        if (id.isEmpty()) {
+                        if (viewState.value.enteredItem.id.isEmpty()) {
                             throw EquipNotFoundException()
                         }
-                        val equipItem = storageRepository.addItem(id = id, item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate()))
+                        val equipItem = storageRepository.addItem(item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate()))
                         if (equipItem.id.isNotEmpty()) {
                             _viewEffect.send(NewEquipScreenEffect.NavigateBack(equipItem))
                         } else {
