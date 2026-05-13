@@ -3,10 +3,10 @@ package com.adden00.tkstoragekeys.data
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.toEquipItem
-import com.adden00.tkstoragekeys.data.network.StorageApiService
+import com.adden00.tkstoragekeys.data.network.StorageApi
 
 class StorageRepository(
-    private val api: StorageApiService,
+    private val api: StorageApi,
     private val appSettings: AppSettings
 ) {
 
@@ -26,38 +26,17 @@ class StorageRepository(
         val response = api.updateItem(
             appSettings.keyHolderName,
             id,
-            item.id,
-            item.category,
-            item.brand,
-            item.name,
-            item.color,
-            item.weigh,
-            item.quality?.value.orEmpty(),
-            item.location,
-            item.event,
-            item.info,
-            item.date,
+            item
         )
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)
         } else return response.equipItem.toEquipItem()
     }
 
-    suspend fun addItem(id: String, item: EquipItem): EquipItem {
+    suspend fun addItem(item: EquipItem): EquipItem {
         val response = api.addItem(
             appSettings.keyHolderName,
-            id,
-            item.id,
-            item.category,
-            item.brand,
-            item.name,
-            item.color,
-            item.weigh,
-            item.quality?.value.orEmpty(),
-            item.location,
-            item.event,
-            item.info,
-            item.date
+            item
         )
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)

@@ -1,6 +1,7 @@
 package com.adden00.tkstoragekeys.data.network
 
 import com.adden00.tkstoragekeys.Constants
+import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
@@ -20,139 +21,92 @@ private const val HASH = HASH_PROD
 class StorageApiService(
     private val api: HttpClient,
     private val baseUrl: String
-) {
+) : StorageApi {
 
-    suspend fun getItem(
-        id: String,
-        type: String = "get",
-        versionCode: String = Constants.VERSION_CODE.toString(),
-    ): EquipResponse {
+    private val versionCode = Constants.VERSION_CODE.toString()
+
+    override suspend fun getItem(id: String): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("id", id)
-            parameters.append("type", type)
+            parameters.append("type", "get")
             parameters.append("versionCode", versionCode)
         }
-        val response = api.post(url.buildString())
-        return runRedirect(response)
+        return runRedirect(api.post(url.buildString()))
     }
 
-    suspend fun getItems(
-        query: String,
-        type: String = "search",
-        versionCode: String = Constants.VERSION_CODE.toString(),
-    ): EquipsResponse {
+    override suspend fun getItems(query: String): EquipsResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("query", query)
-            parameters.append("type", type)
+            parameters.append("type", "search")
             parameters.append("versionCode", versionCode)
         }
-        val response = api.post(url.buildString())
-        return runRedirect(response)
+        return runRedirect(api.post(url.buildString()))
     }
 
-    suspend fun getFreeId(
-        type: String = "getFreeId",
-        versionCode: String = Constants.VERSION_CODE.toString(),
-    ): IdResponse {
+    override suspend fun getFreeId(): IdResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
-            parameters.append("type", type)
+            parameters.append("type", "getFreeId")
             parameters.append("versionCode", versionCode)
         }
-        val response = api.post(url.buildString())
-        return runRedirect(response)
+        return runRedirect(api.post(url.buildString()))
     }
 
-    suspend fun updateItem(
+    override suspend fun updateItem(
         keyholderName: String,
         id: String,
-        itemId: String,
-        category: String,
-        brand: String,
-        name: String,
-        color: String,
-        weigh: String,
-        quality: String,
-        location: String,
-        event: String,
-        info: String,
-        date: String,
-        type: String = "update",
-        versionCode: String = Constants.VERSION_CODE.toString(),
+        item: EquipItem,
     ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("keyholderName", keyholderName)
             parameters.append("id", id)
-            parameters.append("type", type)
-            parameters.append("itemId", itemId)
-            parameters.append("category", category)
-            parameters.append("brand", brand)
-            parameters.append("name", name)
-            parameters.append("color", color)
-            parameters.append("weigh", weigh)
-            parameters.append("quality", quality)
-            parameters.append("location", location)
-            parameters.append("event", event)
-            parameters.append("date", date)
-            parameters.append("info", info)
+            parameters.append("type", "update")
+            parameters.append("itemId", item.id)
+            parameters.append("category", item.category)
+            parameters.append("brand", item.brand)
+            parameters.append("name", item.name)
+            parameters.append("color", item.color)
+            parameters.append("weigh", item.weigh)
+            parameters.append("quality", item.quality?.value.orEmpty())
+            parameters.append("location", item.location)
+            parameters.append("event", item.event)
+            parameters.append("date", item.date)
+            parameters.append("info", item.info)
             parameters.append("versionCode", versionCode)
         }
-        val response = api.post(url.buildString())
-        return runRedirect(response)
-
+        return runRedirect(api.post(url.buildString()))
     }
 
-    suspend fun addItem(
+    override suspend fun addItem(
         keyholderName: String,
-        id: String,
-        itemId: String,
-        category: String,
-        brand: String,
-        name: String,
-        color: String,
-        weigh: String,
-        quality: String,
-        location: String,
-        event: String,
-        info: String,
-        date: String,
-        type: String = "add",
-        versionCode: String = Constants.VERSION_CODE.toString(),
-
-        ): EquipResponse {
+        item: EquipItem,
+    ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("keyholderName", keyholderName)
-            parameters.append("id", id)
-            parameters.append("type", type)
-            parameters.append("itemId", itemId)
-            parameters.append("category", category)
-            parameters.append("brand", brand)
-            parameters.append("name", name)
-            parameters.append("color", color)
-            parameters.append("weigh", weigh)
-            parameters.append("quality", quality)
-            parameters.append("location", location)
-            parameters.append("event", event)
-            parameters.append("date", date)
-            parameters.append("info", info)
+            parameters.append("id", item.id)
+            parameters.append("type", "add")
+            parameters.append("itemId", item.id)
+            parameters.append("category", item.category)
+            parameters.append("brand", item.brand)
+            parameters.append("name", item.name)
+            parameters.append("color", item.color)
+            parameters.append("weigh", item.weigh)
+            parameters.append("quality", item.quality?.value.orEmpty())
+            parameters.append("location", item.location)
+            parameters.append("event", item.event)
+            parameters.append("date", item.date)
+            parameters.append("info", item.info)
             parameters.append("versionCode", versionCode)
         }
-        val response = api.post(url.buildString())
-        return runRedirect(response)
-
+        return runRedirect(api.post(url.buildString()))
     }
 
     private suspend inline fun <reified T> runRedirect(response: HttpResponse): T {
         if (response.status == HttpStatusCode.Found || response.status == HttpStatusCode.MovedPermanently) {
-            // Поймали редирект, выполняем GET запрос по новому URL
             val redirectUrl = response.headers[HttpHeaders.Location]
             if (redirectUrl != null) {
-                val getResponse = api.get(redirectUrl)
-                return getResponse.body()
-            } else {
-                return response.body()
+                return api.get(redirectUrl).body()
             }
-        } else {
-            return response.body()
         }
+        return response.body()
     }
 }
