@@ -9,7 +9,15 @@ data class EquipResponse(
     @SerialName("equipItem") val equipItem: EquipDto? = null,
     @SerialName("message") val message: String? = null,
 
-)
+    )
+
+@Serializable
+data class EquipsResponse(
+    @SerialName("success") val success: Boolean,
+    @SerialName("items") val items: List<EquipDto> = listOf(),
+    @SerialName("message") val message: String? = null,
+
+    )
 
 @Serializable
 data class EquipDto(
@@ -27,9 +35,9 @@ data class EquipDto(
 )
 
 fun EquipDto.toEquipItem() = EquipItem(
-    id, category, brand, name, color, weigh, quality, location, event, info, date
+    id, category, brand, name, color, weigh, quality.extractQuality(), location, event, info, date
 )
 
 fun EquipItem.toDto() = EquipDto(
-    id, category, brand, name, color, weigh, quality, location, event, info, date
+    id, category, brand, name, color, weigh, quality?.value.orEmpty(), location, event, info, date
 )

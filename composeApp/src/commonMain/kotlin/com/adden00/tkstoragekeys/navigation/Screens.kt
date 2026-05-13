@@ -14,6 +14,7 @@ import cafe.adriel.voyager.navigator.lifecycle.NavigatorLifecycleStore
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
 import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
+import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
 import kotlin.jvm.Transient
@@ -31,6 +32,13 @@ object Screens {
         @Composable
         override fun Content() {
             ReceptionScreen()
+        }
+    }
+
+    object PeopleSearch : Screen {
+        @Composable
+        override fun Content() {
+            PeopleSearchScreen()
         }
     }
 

@@ -4,6 +4,7 @@ import com.adden00.tkstoragekeys.data.StorageRepository
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.network.StorageApiService
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
+import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionViewModel
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
@@ -70,6 +71,10 @@ fun viewModelModule() = module {
 
     viewModel {
         NewEquipViewModel()
+    }
+
+    viewModel {
+        PeopleSearchViewModel()
     }
 }
 

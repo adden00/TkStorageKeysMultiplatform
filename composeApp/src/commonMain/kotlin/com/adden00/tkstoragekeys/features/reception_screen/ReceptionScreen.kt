@@ -55,6 +55,8 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.Quality
+import com.adden00.tkstoragekeys.data.model.isOnStorage
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenState
@@ -78,6 +80,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
 
@@ -206,6 +209,7 @@ fun ReceptionScreen(
                     }
                 ) {
                     Icon(
+                        modifier = Modifier.size(24.dp),
                         painter = painterResource(Res.drawable.ic_log_out),
                         contentDescription = "back"
                     )
@@ -283,10 +287,32 @@ fun ReceptionScreen(
                         )
                     } else {
                         Icon(
+                            modifier = Modifier.size(24.dp),
                             painter = painterResource(Res.drawable.ic_search),
                             contentDescription = "search"
                         )
                     }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    modifier = Modifier.size(48.dp),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        containerColor = TkMain,
+                        contentColor = TkWhite,
+                        disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                    ),
+                    onClick = {
+                        navigator.push(
+                            Screens.PeopleSearch
+                        )
+                    }) {
+                    Icon(
+                        modifier = Modifier.size(24.dp),
+                        painter = painterResource(Res.drawable.ic_people_search),
+                        contentDescription = "search"
+                    )
+
                 }
             }
 
@@ -327,14 +353,15 @@ fun ReceptionScreen(
                             text = "Состояние: ",
                         )
                         Text(
-                            text = equipItem.quality,
+                            text = equipItem.quality?.value.orEmpty(),
                             style = TextStyle(
                                 color = when (state.value.currentEquipItem?.quality) {
-                                    "отличное" -> TkGreen
-                                    "Среднее" -> TkYellow
-                                    "Хорошее" -> TkGrey
-                                    "На списание" -> TkRed
-                                    else -> TkGreen
+                                    Quality.BEST -> TkGreen
+                                    Quality.GOOD -> TkGrey
+                                    Quality.MEDIUM -> TkYellow
+                                    Quality.TO_WRITE_OFF -> TkRed
+                                    Quality.WRITE_OFF -> TkRed
+                                    null -> TkGreen
                                 },
                                 fontSize = 18.sp,
                                 textDecoration = TextDecoration.Underline
@@ -466,7 +493,9 @@ fun ReceptionScreen(
                                 containerColor = TkMain,
                                 disabledContainerColor = TkMain.copy(alpha = 0.8f)
                             ),
-                            enabled = state.value.currentEquipItem != null && !state.value.isBusy()
+                            enabled = state.value.currentEquipItem?.let {
+                                !state.value.isBusy() && !it.isOnStorage()
+                            } ?: false
                         ) {
                             Text("на новый склад")
                             if (state.value.isMovingToNewStorage) {

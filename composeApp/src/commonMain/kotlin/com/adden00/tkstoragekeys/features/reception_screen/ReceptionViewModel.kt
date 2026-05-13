@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adden00.tkstoragekeys.data.EquipNotFoundException
 import com.adden00.tkstoragekeys.data.StorageRepository
+import com.adden00.tkstoragekeys.data.model.isWritingOff
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenState
@@ -69,6 +70,13 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
             }
 
             is ReceptionScreenEvent.UpdateInfo -> {
+                if (viewEvent.updateType == UpdateType.MOVING && viewEvent.newItem.isWritingOff()) {
+                    viewModelScope.launch {
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Данный предмет идёт на списание!"))
+                    }
+                    return
+                }
+
                 _viewState.update {
                     when (viewEvent.updateType) {
                         UpdateType.MOVING -> viewState.value.copy(isMovingToPerson = true)
