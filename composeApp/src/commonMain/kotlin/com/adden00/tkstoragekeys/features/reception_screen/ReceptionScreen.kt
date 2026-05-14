@@ -100,6 +100,7 @@ fun ReceptionScreen(
     val fromSearch = startItem != null
 
     val snackbarHostState = remember { SnackbarHostState() }
+
     val state = viewModel.viewState.collectAsState()
 
     LaunchedEffect("side effects") {
