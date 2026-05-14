@@ -118,11 +118,14 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                 _viewState.update { it.copy(enteredLocationText = viewEvent.text) }
             }
 
-            is ReceptionScreenEvent.UpdateEquipItem -> {
-                _viewState.update { it.copy(currentEquipItem = viewEvent.item) }
+            is ReceptionScreenEvent.ShowUpdatedItem -> {
                 viewModelScope.launch {
-                    _viewEffect.send(ReceptionScreenEffect.ShowToast("Обновлено: ${viewEvent.item.id}"))
+                    _viewEffect.send(ReceptionScreenEffect.ShowToast("Обновлено: ${viewEvent.itemId}"))
                 }
+            }
+
+            is ReceptionScreenEvent.SetItem -> {
+                _viewState.update { it.copy(currentEquipItem = viewEvent.item) }
             }
 
             is ReceptionScreenEvent.DismissNotExistsDialog -> {

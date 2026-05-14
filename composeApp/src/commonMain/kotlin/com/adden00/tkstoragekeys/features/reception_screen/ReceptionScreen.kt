@@ -89,7 +89,8 @@ fun ReceptionScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
     resultItem: State<EquipItem?> = navigatorExtension.getResult<EquipItem>("KEY"),
-    appSettings: AppSettings = koinInject()
+    appSettings: AppSettings = koinInject(),
+    startItem: EquipItem? = null,
 ) {
     val viewModel: ReceptionViewModel = koinViewModel()
 
@@ -108,10 +109,12 @@ fun ReceptionScreen(
         }
     }
 
-    LaunchedEffect("result api") {
+    LaunchedEffect("initial value") {
         resultItem.value?.let { item ->
-            viewModel.obtainEvent(ReceptionScreenEvent.UpdateEquipItem(item))
+            viewModel.obtainEvent(ReceptionScreenEvent.SetItem(item))
+            viewModel.obtainEvent(ReceptionScreenEvent.ShowUpdatedItem(item.id))
         }
+        startItem?.let { viewModel.obtainEvent(ReceptionScreenEvent.SetItem(it)) }
     }
 
     Scaffold(

@@ -8,7 +8,8 @@ sealed class ReceptionScreenEvent {
     data class OnSearchTextChanged(val text: String) : ReceptionScreenEvent()
     data class OnLocationTextChanged(val text: String) : ReceptionScreenEvent()
     data class OnEventTextChanged(val text: String) : ReceptionScreenEvent()
-    data class UpdateEquipItem(val item: EquipItem) : ReceptionScreenEvent()
+    data class SetItem(val item: EquipItem) : ReceptionScreenEvent()
+    data class ShowUpdatedItem(val itemId: String) : ReceptionScreenEvent()
     data object DismissNotExistsDialog : ReceptionScreenEvent()
 }
 

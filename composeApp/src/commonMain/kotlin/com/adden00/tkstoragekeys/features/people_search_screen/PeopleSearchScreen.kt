@@ -1,5 +1,7 @@
 package com.adden00.tkstoragekeys.features.people_search_screen
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -50,6 +52,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.SearchMode
@@ -218,18 +221,31 @@ fun PeopleSearchScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn {
-                items(state.value.currentEquipList) { item ->
-                    EquipItemLayout(
-                        item = item,
-                        isLoading = state.value.isReturning,
-                        enabled = !state.value.isBusy(),
-                        onReturnButtonClick = {
-                            viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = newStorageString, event = "")))
-                        }
-                    )
+            if (state.value.currentEquipList.isNotEmpty()) {
+                LazyColumn {
+                    items(state.value.currentEquipList) { item ->
+                        EquipItemLayout(
+                            item = item,
+                            isLoading = state.value.isReturning,
+                            enabled = !state.value.isBusy(),
+                            onReturnButtonClick = {
+                                viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = newStorageString, event = "")))
+                            },
+                            onItemClick = {
+                                navigator.push(Screens.Reception(startItem = item))
+                            }
+                        )
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("введите запрос")
                 }
             }
+
         }
     }
 }
@@ -239,12 +255,13 @@ fun EquipItemLayout(
     item: EquipItem,
     isLoading: Boolean,
     enabled: Boolean,
-    onReturnButtonClick: () -> Unit
+    onReturnButtonClick: () -> Unit,
+    onItemClick: () -> Unit = {},
 ) {
     val newStorageString = stringResource(Res.string.new_storage)
 
     ElevatedCard(
-        modifier = Modifier.padding(horizontal = Dimens.PaddingHorizontal, vertical = Dimens.PaddingSmall).fillMaxWidth(),
+        modifier = Modifier.clickable { onItemClick() }.padding(horizontal = Dimens.PaddingHorizontal, vertical = Dimens.PaddingSmall).fillMaxWidth(),
         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
         colors = CardDefaults.cardColors(
             containerColor = TkLightBlue
