@@ -17,8 +17,13 @@ class StorageRepository(
         } else return response.equipItem.toEquipItem()
     }
 
+    suspend fun searchByLocation(query: String): List<EquipItem> {
+        val response = api.searchByLocation(query.trim())
+        return response.items.map { it.toEquipItem() }
+    }
+
     suspend fun searchByName(query: String): List<EquipItem> {
-        val response = api.getItems(query.trim())
+        val response = api.searchByName(query.trim())
         return response.items.map { it.toEquipItem() }
     }
 

@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -25,6 +26,9 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -48,6 +52,7 @@ import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
+import com.adden00.tkstoragekeys.features.people_search_screen.mvi.SearchMode
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.isBusy
 import com.adden00.tkstoragekeys.theme.Dimens
 import com.adden00.tkstoragekeys.theme.TkDark
@@ -67,13 +72,13 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_return
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PeopleSearchScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
 ) {
     val viewModel: PeopleSearchViewModel = koinViewModel()
     val newStorageString = stringResource(Res.string.new_storage)
-
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
@@ -100,8 +105,9 @@ fun PeopleSearchScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Поиск снаряжения")
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
@@ -120,15 +126,28 @@ fun PeopleSearchScreen(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = "Поиск по местонахождению",
-                    style = TextStyle(
-                        fontSize = 18.sp,
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    SegmentedButton(
+                        selected = state.value.searchMode == SearchMode.BY_LOCATION,
+                        onClick = { viewModel.obtainEvent(PeopleSearchScreenEvent.SelectSearchMode(SearchMode.BY_LOCATION)) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
+                        icon = {},
+                        label = { Text(text = "место", maxLines = 1) }
                     )
-                )
+                    SegmentedButton(
+                        selected = state.value.searchMode == SearchMode.BY_NAME,
+                        onClick = { viewModel.obtainEvent(PeopleSearchScreenEvent.SelectSearchMode(SearchMode.BY_NAME)) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
+                        icon = {},
+                        label = { Text(text = "название", maxLines = 1) }
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
                 modifier = Modifier
@@ -154,7 +173,13 @@ fun PeopleSearchScreen(
                         unfocusedLabelColor = TkGrey
                     ),
                     label = {
-                        Text("Местонахождение")
+                        Text(
+                            when (state.value.searchMode) {
+                                SearchMode.BY_LOCATION -> "Местонахождение"
+                                SearchMode.BY_NAME -> "Название"
+                                SearchMode.BY_NAME -> "Название"
+                            }
+                        )
                     },
                     keyboardActions = KeyboardActions(
                         onSearch = {
