@@ -28,10 +28,13 @@ object Screens {
         }
     }
 
-    object Reception : Screen {
+    data class Reception(
+        @Transient
+        val startItem: EquipItem? = null,
+    ) : Screen {
         @Composable
         override fun Content() {
-            ReceptionScreen()
+            ReceptionScreen(startItem = startItem)
         }
     }
 
