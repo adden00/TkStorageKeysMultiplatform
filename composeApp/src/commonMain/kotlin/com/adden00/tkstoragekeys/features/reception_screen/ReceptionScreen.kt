@@ -79,6 +79,7 @@ import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
@@ -95,6 +96,8 @@ fun ReceptionScreen(
     val viewModel: ReceptionViewModel = koinViewModel()
 
     val newStorageString = stringResource(Res.string.new_storage)
+
+    val fromSearch = startItem != null
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
@@ -123,19 +126,21 @@ fun ReceptionScreen(
             .imePadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                shape = CircleShape,
-                containerColor = TkMain,
-                onClick = {
-                    navigator.push(
-                        Screens.AddNewEquip(
-                            startItem = EquipItem(
-                                location = newStorageString
+            if (!fromSearch) {
+                FloatingActionButton(
+                    shape = CircleShape,
+                    containerColor = TkMain,
+                    onClick = {
+                        navigator.push(
+                            Screens.AddNewEquip(
+                                startItem = EquipItem(
+                                    location = newStorageString
+                                )
                             )
                         )
-                    )
-                }) {
-                Text("+", style = TextStyle(fontSize = 24.sp))
+                    }) {
+                    Text("+", style = TextStyle(fontSize = 24.sp))
+                }
             }
         }
     ) { innerPadding ->
@@ -203,119 +208,140 @@ fun ReceptionScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedIconButton(
-                    onClick = {
-                        appSettings.keyHolderName = ""
-                        navigator.replace(Screens.EnterPassword)
+                if (fromSearch) {
+                    OutlinedIconButton(onClick = { navigator.pop() }) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(Res.drawable.ic_back),
+                            contentDescription = "back"
+                        )
                     }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_log_out),
-                        contentDescription = "back"
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "Выдача снаряжения",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
                     )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = "Поиск и выдача снаряжения",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center
-                    )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(
-                    onClick = {
-                        navigator.push(Screens.Tutorial)
+                } else {
+                    OutlinedIconButton(
+                        onClick = {
+                            appSettings.keyHolderName = ""
+                            navigator.replace(Screens.EnterPassword)
+                        }
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(Res.drawable.ic_log_out),
+                            contentDescription = "back"
+                        )
                     }
-                ) {
-                    Text("Памятка")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "Поиск и выдача снаряжения",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            navigator.push(Screens.Tutorial)
+                        }
+                    ) {
+                        Text("Памятка")
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            if (!fromSearch) {
+                Spacer(modifier = Modifier.height(4.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                    value = state.value.enteredSearchText,
-                    onValueChange = {
-                        viewModel.obtainEvent(ReceptionScreenEvent.OnSearchTextChanged(it))
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Search
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedLabelColor = TkGrey
-                    ),
-                    label = {
-                        Text("Номер")
-                    },
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
-                        }
-                    )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    modifier = Modifier.size(48.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = TkMain,
-                        contentColor = TkWhite,
-                        disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                    ),
-                    enabled = state.value.enteredSearchText.isNotEmpty() && !state.value.isBusy(),
-                    onClick = {
-                        viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
-                    }) {
-                    if (state.value.isSearching) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = TkWhite,
-                            strokeWidth = 2.dp
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.PaddingHorizontal),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 8.dp),
+                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
+                        value = state.value.enteredSearchText,
+                        onValueChange = {
+                            viewModel.obtainEvent(ReceptionScreenEvent.OnSearchTextChanged(it))
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Search
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedLabelColor = TkGrey
+                        ),
+                        label = {
+                            Text("Номер")
+                        },
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
+                            }
                         )
-                    } else {
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = TkMain,
+                            contentColor = TkWhite,
+                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                        ),
+                        enabled = state.value.enteredSearchText.isNotEmpty() && !state.value.isBusy(),
+                        onClick = {
+                            viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
+                        }) {
+                        if (state.value.isSearching) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = TkWhite,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(Res.drawable.ic_search),
+                                contentDescription = "search"
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = TkMain,
+                            contentColor = TkWhite,
+                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                        ),
+                        onClick = {
+                            navigator.push(
+                                Screens.PeopleSearch
+                            )
+                        }) {
                         Icon(
                             modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_search),
+                            painter = painterResource(Res.drawable.ic_people_search),
                             contentDescription = "search"
                         )
+
                     }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    modifier = Modifier.size(48.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = TkMain,
-                        contentColor = TkWhite,
-                        disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                    ),
-                    onClick = {
-                        navigator.push(
-                            Screens.PeopleSearch
-                        )
-                    }) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_people_search),
-                        contentDescription = "search"
-                    )
-
                 }
             }
 
