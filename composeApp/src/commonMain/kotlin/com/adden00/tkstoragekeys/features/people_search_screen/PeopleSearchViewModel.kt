@@ -7,6 +7,7 @@ import com.adden00.tkstoragekeys.data.StorageRepository
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenState
+import com.adden00.tkstoragekeys.features.people_search_screen.mvi.SearchMode
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,29 +31,27 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
 
     fun obtainEvent(viewEvent: PeopleSearchScreenEvent) {
         when (viewEvent) {
-            PeopleSearchScreenEvent.DismissNotExistsDialog -> TODO()
+            is PeopleSearchScreenEvent.SelectSearchMode -> {
+                _viewState.update { it.copy(searchMode = viewEvent.mode, currentEquipList = listOf()) }
+            }
 
             is PeopleSearchScreenEvent.GetInfo -> {
                 if (viewState.value.isSearching) return
-
                 _viewState.update { it.copy(isSearching = true) }
                 viewModelScope.launch {
                     try {
-                        val equipItems = storageRepository.searchByName(query = viewEvent.query)
-                        _viewState.update { it.copy(currentEquipList = equipItems) }
+                        val items = when (viewState.value.searchMode) {
+                            SearchMode.BY_LOCATION -> storageRepository.searchByLocation(viewEvent.query)
+                            SearchMode.BY_NAME -> storageRepository.searchByName(viewEvent.query)
+                        }
+                        _viewState.update { it.copy(currentEquipList = items) }
                     } catch (e: EquipNotFoundException) {
                         if (!e.message.isNullOrEmpty()) {
                             _viewEffect.send(PeopleSearchScreenEffect.ShowToast(e.message))
-                            _viewState.update { it.copy(currentEquipList = listOf(), enteredSearchText = "") }
                         } else {
-                            _viewEffect.send(PeopleSearchScreenEffect.ShowToast(" не найдено!"))
-                            _viewState.update {
-                                it.copy(
-                                    currentEquipList = listOf(),
-                                    enteredSearchText = "",
-                                )
-                            }
+                            _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Не найдено!"))
                         }
+                        _viewState.update { it.copy(currentEquipList = listOf(), enteredSearchText = "") }
                     } catch (e: Exception) {
                         _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
@@ -64,15 +63,17 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
             is PeopleSearchScreenEvent.OnSearchTextChanged -> {
                 _viewState.update { it.copy(enteredSearchText = viewEvent.text) }
             }
+
             is PeopleSearchScreenEvent.ReturnItem -> {
                 _viewState.update { it.copy(isReturning = true) }
-
                 viewModelScope.launch {
                     try {
                         val newItem = storageRepository.updateItem(id = viewEvent.item.id, item = viewEvent.item)
                         _viewState.update {
                             it.copy(
-                                currentEquipList = _viewState.value.currentEquipList.map { item -> if (item.id == newItem.id) newItem else item },
+                                currentEquipList = _viewState.value.currentEquipList.map { item ->
+                                    if (item.id == newItem.id) newItem else item
+                                },
                                 enteredSearchText = ""
                             )
                         }
@@ -80,14 +81,12 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
                         if (!e.message.isNullOrEmpty()) {
                             _viewEffect.send(PeopleSearchScreenEffect.ShowToast(e.message))
                         }
-
                     } catch (e: Exception) {
                         _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isReturning = false) }
                     }
                 }
-
             }
         }
     }

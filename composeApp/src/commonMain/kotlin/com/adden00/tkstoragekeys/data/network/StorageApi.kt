@@ -9,7 +9,11 @@ interface StorageApi {
 
     suspend fun getItem(id: String): EquipResponse
 
-    suspend fun getItems(query: String): EquipsResponse
+    suspend fun getAllItems(): EquipsResponse
+
+    suspend fun searchByLocation(query: String): EquipsResponse
+
+    suspend fun searchByName(query: String): EquipsResponse
 
     suspend fun getFreeId(): IdResponse
 

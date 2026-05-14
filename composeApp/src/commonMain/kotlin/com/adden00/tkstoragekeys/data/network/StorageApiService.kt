@@ -34,13 +34,17 @@ class StorageApiService(
         return runRedirect(api.post(url.buildString()))
     }
 
-    override suspend fun getItems(query: String): EquipsResponse {
+    override suspend fun searchByLocation(query: String): EquipsResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("query", query)
             parameters.append("type", "search")
             parameters.append("versionCode", versionCode)
         }
         return runRedirect(api.post(url.buildString()))
+    }
+
+    override suspend fun getAllItems(): EquipsResponse {
+        TODO("Not supported by Google Apps Script API")
     }
 
     override suspend fun getFreeId(): IdResponse {
@@ -98,6 +102,10 @@ class StorageApiService(
             parameters.append("versionCode", versionCode)
         }
         return runRedirect(api.post(url.buildString()))
+    }
+
+    override suspend fun searchByName(query: String): EquipsResponse {
+        TODO("Not yet implemented")
     }
 
     private suspend inline fun <reified T> runRedirect(response: HttpResponse): T {
