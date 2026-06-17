@@ -1,6 +1,7 @@
 package com.adden00.tkstoragekeys.features.reception_screen.mvi
 
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 
 sealed class ReceptionScreenEvent {
     data class GetInfo(val id: String) : ReceptionScreenEvent()
@@ -11,6 +12,7 @@ sealed class ReceptionScreenEvent {
     data class SetItem(val item: EquipItem) : ReceptionScreenEvent()
     data class ShowUpdatedItem(val itemId: String) : ReceptionScreenEvent()
     data object DismissNotExistsDialog : ReceptionScreenEvent()
+    data class Export(val format: ExportFormat) : ReceptionScreenEvent()
 }
 
 enum class UpdateType {

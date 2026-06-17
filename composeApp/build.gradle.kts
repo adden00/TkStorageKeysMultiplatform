@@ -70,6 +70,9 @@ kotlin {
             implementation(libs.multiplatformSettings)
             implementation(libs.kotlinx.datetime)
             implementation(libs.voyager.navigator)
+
+            implementation(libs.filekit.core)
+            implementation(libs.filekit.compose)
         }
 
         commonTest.dependencies {

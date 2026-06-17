@@ -1,6 +1,7 @@
 package com.adden00.tkstoragekeys.features.reception_screen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,11 +21,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -37,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,6 +58,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.Quality
 import com.adden00.tkstoragekeys.data.model.isOnStorage
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
@@ -73,6 +77,7 @@ import com.adden00.tkstoragekeys.theme.TkRed
 import com.adden00.tkstoragekeys.theme.TkWhite
 import com.adden00.tkstoragekeys.theme.TkYellow
 import com.adden00.tkstoragekeys.utils.DateUtils
+import io.github.vinceglb.filekit.compose.rememberFileSaverLauncher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -81,6 +86,7 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_menu
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
@@ -103,11 +109,20 @@ fun ReceptionScreen(
 
     val state = viewModel.viewState.collectAsState()
 
+    val fileSaverLauncher = rememberFileSaverLauncher { /* no action needed after save */ }
+
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
             when (effect) {
                 is ReceptionScreenEffect.ShowToast -> {
                     snackbarHostState.showSnackbar(effect.message)
+                }
+                is ReceptionScreenEffect.SaveFile -> {
+                    fileSaverLauncher.launch(
+                        bytes = effect.bytes,
+                        baseName = "Клубное снаряжение_${DateUtils.getCurrentDateTimeForFileName()}",
+                        extension = effect.extension
+                    )
                 }
             }
         }
@@ -251,12 +266,59 @@ fun ReceptionScreen(
                         )
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    OutlinedButton(
-                        onClick = {
-                            navigator.push(Screens.Tutorial)
+                    val menuExpanded = remember { mutableStateOf(false) }
+                    Box {
+                        OutlinedIconButton(onClick = { menuExpanded.value = true }) {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(Res.drawable.ic_menu),
+                                contentDescription = "menu"
+                            )
                         }
-                    ) {
-                        Text("Памятка")
+                        DropdownMenu(
+                            expanded = menuExpanded.value,
+                            onDismissRequest = { menuExpanded.value = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Памятка") },
+                                onClick = {
+                                    menuExpanded.value = false
+                                    navigator.push(Screens.Tutorial)
+                                }
+                            )
+                            DropdownMenuItem(
+                                enabled = state.value.exportingFormat == null,
+                                text = { Text("Экспорт CSV") },
+                                trailingIcon = if (state.value.exportingFormat == ExportFormat.CSV) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.Export(ExportFormat.CSV))
+                                }
+                            )
+                            DropdownMenuItem(
+                                enabled = state.value.exportingFormat == null,
+                                text = { Text("Экспорт XLS") },
+                                trailingIcon = if (state.value.exportingFormat == ExportFormat.XLS) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.Export(ExportFormat.XLS))
+                                }
+                            )
+                        }
                     }
                 }
             }
