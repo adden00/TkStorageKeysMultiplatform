@@ -3,7 +3,9 @@ package com.adden00.tkstoragekeys.data.network
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.IdResponse
+import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 
 interface StorageApi {
 
@@ -20,5 +22,9 @@ interface StorageApi {
     suspend fun updateItem(keyholderName: String, id: String, item: EquipItem): EquipResponse
 
     suspend fun addItem(keyholderName: String, item: EquipItem): EquipResponse
+
+    suspend fun getItemHistory(id: String): ItemHistoryResponse
+
+    suspend fun exportItems(format: ExportFormat): ByteArray
 
 }

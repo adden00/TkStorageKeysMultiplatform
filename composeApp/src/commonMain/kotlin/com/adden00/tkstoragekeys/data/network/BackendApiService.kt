@@ -5,7 +5,9 @@ import com.adden00.tkstoragekeys.data.model.AddItemRequest
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.IdResponse
+import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 import com.adden00.tkstoragekeys.data.model.UpdateItemRequest
 import com.adden00.tkstoragekeys.data.model.toDto
 import io.ktor.client.HttpClient
@@ -73,4 +75,10 @@ class BackendApiService(
             contentType(ContentType.Application.Json)
             setBody(UpdateItemRequest(newItem = item.toDto(), keyholderName = keyholderName))
         }.body()
+
+    override suspend fun getItemHistory(id: String): ItemHistoryResponse =
+        api.get("$base/items/$id/history").body()
+
+    override suspend fun exportItems(format: ExportFormat): ByteArray =
+        api.get("$base/items/export/${format.path}").body()
 }
