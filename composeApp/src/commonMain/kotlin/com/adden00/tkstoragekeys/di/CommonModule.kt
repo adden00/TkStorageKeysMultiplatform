@@ -7,6 +7,7 @@ import com.adden00.tkstoragekeys.data.network.BackendApiService
 import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.data.network.StorageApiService
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
+import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
 import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionViewModel
 import com.russhwolf.settings.Settings
@@ -81,6 +82,10 @@ fun viewModelModule() = module {
 
     viewModel {
         PeopleSearchViewModel()
+    }
+
+    viewModel {
+        ItemHistoryViewModel()
     }
 }
 

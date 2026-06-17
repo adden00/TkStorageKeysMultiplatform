@@ -448,6 +448,17 @@ fun ReceptionScreen(
                         style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
                         text = stringResource(Res.string.edit)
                     )
+
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navigator.push(Screens.ItemHistory(itemId = equipItem.id))
+                            }
+                            .padding(horizontal = Dimens.PaddingHorizontal, vertical = 4.dp),
+                        style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
+                        text = "История"
+                    )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))

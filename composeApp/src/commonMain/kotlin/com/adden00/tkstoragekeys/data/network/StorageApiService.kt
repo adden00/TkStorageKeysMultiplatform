@@ -4,7 +4,9 @@ import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.IdResponse
+import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -106,6 +108,14 @@ class StorageApiService(
 
     override suspend fun searchByName(query: String): EquipsResponse {
         TODO("Not yet implemented")
+    }
+
+    override suspend fun getItemHistory(id: String): ItemHistoryResponse {
+        TODO("Not supported by Google Apps Script API")
+    }
+
+    override suspend fun exportItems(format: ExportFormat): ByteArray {
+        TODO("Not supported by Google Apps Script API")
     }
 
     private suspend inline fun <reified T> runRedirect(response: HttpResponse): T {
