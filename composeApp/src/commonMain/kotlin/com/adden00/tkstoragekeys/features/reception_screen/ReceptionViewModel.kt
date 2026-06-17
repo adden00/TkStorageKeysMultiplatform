@@ -132,6 +132,21 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                 _viewState.update { it.copy(isNumberNoxExistsShown = false, notFoundedId = null) }
             }
 
+            is ReceptionScreenEvent.Export -> {
+                if (_viewState.value.exportingFormat != null) return
+                _viewState.update { it.copy(exportingFormat = viewEvent.format) }
+                viewModelScope.launch {
+                    try {
+                        val bytes = storageRepository.exportItems(viewEvent.format)
+                        _viewEffect.send(ReceptionScreenEffect.SaveFile(bytes, viewEvent.format.extension))
+                    } catch (e: Exception) {
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
+                    } finally {
+                        _viewState.update { it.copy(exportingFormat = null) }
+                    }
+                }
+            }
+
         }
     }
 }
