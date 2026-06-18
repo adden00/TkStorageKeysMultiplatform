@@ -103,8 +103,9 @@ fun EnterPasswordScreen(
 
                 Button(
                     onClick = {
-                        if (passwordEditText.value == KEY) {
+                        if (passwordEditText.value == KEY || passwordEditText.value == INVENTORY_KEY) {
                             appSettings.keyHolderName = nameEditText.value
+                            appSettings.inventoryMode = passwordEditText.value == INVENTORY_KEY
                             navigator.replace(Screens.Reception())
                         } else {
                             CoroutineScope(Dispatchers.Main).launch {
@@ -130,3 +131,4 @@ fun EnterPasswordScreen(
 }
 
 private const val KEY = "925720"
+private const val INVENTORY_KEY = "999999"

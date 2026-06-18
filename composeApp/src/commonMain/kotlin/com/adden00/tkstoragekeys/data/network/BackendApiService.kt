@@ -40,19 +40,9 @@ class BackendApiService(
     override suspend fun getAllItems(): EquipsResponse =
         api.get("$base/items").body()
 
-    override suspend fun searchByLocation(query: String): EquipsResponse =
+    override suspend fun search(query: String): EquipsResponse =
         api.get("$base/items/search") {
             url { parameters.append("query", query) }
-        }.body()
-
-    override suspend fun searchByName(query: String): EquipsResponse =
-        api.get("$base/items/search/by-name") {
-            url {
-                parameters.append(
-                    name = "query",
-                    value = query
-                )
-            }
         }.body()
 
     override suspend fun getFreeId(): IdResponse =

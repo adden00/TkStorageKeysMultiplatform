@@ -37,7 +37,7 @@ class StorageApiService(
         return runRedirect(api.post(url.buildString()))
     }
 
-    override suspend fun searchByLocation(query: String): EquipsResponse {
+    override suspend fun search(query: String): EquipsResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("query", query)
             parameters.append("type", "search")
@@ -105,10 +105,6 @@ class StorageApiService(
             parameters.append("versionCode", versionCode)
         }
         return runRedirect(api.post(url.buildString()))
-    }
-
-    override suspend fun searchByName(query: String): EquipsResponse {
-        TODO("Not yet implemented")
     }
 
     override suspend fun getItemHistory(id: String): ItemHistoryResponse {

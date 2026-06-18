@@ -7,7 +7,6 @@ import com.adden00.tkstoragekeys.data.StorageRepository
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenState
-import com.adden00.tkstoragekeys.features.people_search_screen.mvi.SearchMode
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,19 +30,12 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
 
     fun obtainEvent(viewEvent: PeopleSearchScreenEvent) {
         when (viewEvent) {
-            is PeopleSearchScreenEvent.SelectSearchMode -> {
-                _viewState.update { it.copy(searchMode = viewEvent.mode, currentEquipList = listOf()) }
-            }
-
             is PeopleSearchScreenEvent.GetInfo -> {
                 if (viewState.value.isSearching) return
                 _viewState.update { it.copy(isSearching = true) }
                 viewModelScope.launch {
                     try {
-                        val items = when (viewState.value.searchMode) {
-                            SearchMode.BY_LOCATION -> storageRepository.searchByLocation(viewEvent.query)
-                            SearchMode.BY_NAME -> storageRepository.searchByName(viewEvent.query)
-                        }
+                        val items = storageRepository.search(viewEvent.query)
                         _viewState.update { it.copy(currentEquipList = items) }
                     } catch (e: EquipNotFoundException) {
                         if (!e.message.isNullOrEmpty()) {

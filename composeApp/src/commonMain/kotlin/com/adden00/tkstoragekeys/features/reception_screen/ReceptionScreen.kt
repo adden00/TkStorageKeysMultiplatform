@@ -69,7 +69,6 @@ import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
 import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
 import com.adden00.tkstoragekeys.theme.Dimens
-import com.adden00.tkstoragekeys.theme.TkDark
 import com.adden00.tkstoragekeys.theme.TkGreen
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
@@ -89,7 +88,7 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_menu
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
-import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
+import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
 @Composable
 fun ReceptionScreen(
@@ -101,7 +100,7 @@ fun ReceptionScreen(
 ) {
     val viewModel: ReceptionViewModel = koinViewModel()
 
-    val newStorageString = stringResource(Res.string.new_storage)
+    val storageString = stringResource(Res.string.storage)
 
     val fromSearch = startItem != null
 
@@ -150,7 +149,7 @@ fun ReceptionScreen(
                         navigator.push(
                             Screens.AddNewEquip(
                                 startItem = EquipItem(
-                                    location = newStorageString
+                                    location = storageString
                                 )
                             )
                         )
@@ -202,7 +201,7 @@ fun ReceptionScreen(
                                             Screens.AddNewEquip(
                                                 startItem = EquipItem(
                                                     id = id,
-                                                    location = newStorageString
+                                                    location = storageString
                                                 )
                                             )
                                         )
@@ -411,7 +410,7 @@ fun ReceptionScreen(
                         ),
                         onClick = {
                             navigator.push(
-                                Screens.PeopleSearch
+                                Screens.Search
                             )
                         }) {
                         Icon(
@@ -488,8 +487,7 @@ fun ReceptionScreen(
                             text = equipItem.location,
                             style = TextStyle(
                                 color = when (state.value.currentEquipItem?.location) {
-                                    "склад" -> TkGreen
-                                    "новый склад" -> TkDark
+                                    storageString -> TkGreen
                                     else -> TkYellow
                                 },
                                 fontSize = 20.sp,
@@ -520,11 +518,13 @@ fun ReceptionScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = equipItem))
+                                val target = if (appSettings.inventoryMode)
+                                    equipItem.copy(location = storageString, event = "") else equipItem
+                                navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                             }
                             .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
                         style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
-                        text = stringResource(Res.string.edit)
+                        text = if (appSettings.inventoryMode) "инвентаризовать" else stringResource(Res.string.edit)
                     )
 
                     Text(
@@ -598,7 +598,7 @@ fun ReceptionScreen(
                                         ReceptionScreenEvent.UpdateInfo(
                                             equipItem.id,
                                             equipItem.copy(
-                                                location = newStorageString,
+                                                location = storageString,
                                                 event = "",
                                                 date = DateUtils.getCurrentDate()
                                             ),
@@ -616,7 +616,7 @@ fun ReceptionScreen(
                                 !state.value.isBusy() && !it.isOnStorage()
                             } ?: false
                         ) {
-                            Text("на новый склад")
+                            Text("на склад")
                             if (state.value.isMovingToNewStorage) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 CircularProgressIndicator(
