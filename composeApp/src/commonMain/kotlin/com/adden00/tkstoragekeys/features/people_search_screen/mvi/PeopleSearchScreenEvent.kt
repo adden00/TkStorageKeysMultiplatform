@@ -6,5 +6,4 @@ sealed class PeopleSearchScreenEvent {
     data class GetInfo(val query: String) : PeopleSearchScreenEvent()
     data class ReturnItem(val item: EquipItem) : PeopleSearchScreenEvent()
     data class OnSearchTextChanged(val text: String) : PeopleSearchScreenEvent()
-    data class SelectSearchMode(val mode: SearchMode) : PeopleSearchScreenEvent()
 }

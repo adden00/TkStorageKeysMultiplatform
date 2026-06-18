@@ -14,9 +14,7 @@ interface StorageApi {
 
     suspend fun getAllItems(): EquipsResponse
 
-    suspend fun searchByLocation(query: String): EquipsResponse
-
-    suspend fun searchByName(query: String): EquipsResponse
+    suspend fun search(query: String): EquipsResponse
 
     suspend fun getFreeId(): IdResponse
 

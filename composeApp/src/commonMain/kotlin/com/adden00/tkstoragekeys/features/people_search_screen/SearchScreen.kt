@@ -20,7 +20,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -28,9 +27,6 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -55,10 +51,8 @@ import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
-import com.adden00.tkstoragekeys.features.people_search_screen.mvi.SearchMode
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.isBusy
 import com.adden00.tkstoragekeys.theme.Dimens
-import com.adden00.tkstoragekeys.theme.TkDark
 import com.adden00.tkstoragekeys.theme.TkGreen
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkLightBlue
@@ -73,15 +67,14 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_ok
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_return
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
-import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
+import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PeopleSearchScreen(
+fun SearchScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
 ) {
     val viewModel: PeopleSearchViewModel = koinViewModel()
-    val newStorageString = stringResource(Res.string.new_storage)
+    val storageString = stringResource(Res.string.storage)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
@@ -127,27 +120,6 @@ fun PeopleSearchScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(8.dp))
-
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier
-                        .weight(1f)
-                ) {
-                    SegmentedButton(
-                        selected = state.value.searchMode == SearchMode.BY_LOCATION,
-                        onClick = { viewModel.obtainEvent(PeopleSearchScreenEvent.SelectSearchMode(SearchMode.BY_LOCATION)) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
-                        icon = {},
-                        label = { Text(text = "место", maxLines = 1) }
-                    )
-                    SegmentedButton(
-                        selected = state.value.searchMode == SearchMode.BY_NAME,
-                        onClick = { viewModel.obtainEvent(PeopleSearchScreenEvent.SelectSearchMode(SearchMode.BY_NAME)) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
-                        icon = {},
-                        label = { Text(text = "название", maxLines = 1) }
-                    )
-                }
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -176,13 +148,7 @@ fun PeopleSearchScreen(
                         unfocusedLabelColor = TkGrey
                     ),
                     label = {
-                        Text(
-                            when (state.value.searchMode) {
-                                SearchMode.BY_LOCATION -> "Местонахождение"
-                                SearchMode.BY_NAME -> "Название"
-                                SearchMode.BY_NAME -> "Название"
-                            }
-                        )
+                        Text("название, место, мероприятие, цвет и т.д.")
                     },
                     keyboardActions = KeyboardActions(
                         onSearch = {
@@ -229,7 +195,7 @@ fun PeopleSearchScreen(
                             isLoading = state.value.isReturning,
                             enabled = !state.value.isBusy(),
                             onReturnButtonClick = {
-                                viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = newStorageString, event = "")))
+                                viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = storageString, event = "")))
                             },
                             onItemClick = {
                                 navigator.push(Screens.Reception(startItem = item))
@@ -258,7 +224,7 @@ fun EquipItemLayout(
     onReturnButtonClick: () -> Unit,
     onItemClick: () -> Unit = {},
 ) {
-    val newStorageString = stringResource(Res.string.new_storage)
+    val storageString = stringResource(Res.string.storage)
 
     ElevatedCard(
         modifier = Modifier.clickable { onItemClick() }.padding(horizontal = Dimens.PaddingHorizontal, vertical = Dimens.PaddingSmall).fillMaxWidth(),
@@ -289,8 +255,7 @@ fun EquipItemLayout(
                     item.location,
                     style = TextStyle(
                         color = when (item.location) {
-                            "склад" -> TkGreen
-                            "новый склад" -> TkDark
+                            storageString -> TkGreen
                             else -> TkYellow
                         },
                         fontSize = 14.sp,
@@ -302,13 +267,13 @@ fun EquipItemLayout(
             OutlinedIconButton(
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = if (item.location == newStorageString) TkLightBlue else TkMain,
-                    contentColor = if (item.location == newStorageString) TkGreen else TkWhite,
+                    containerColor = if (item.location == storageString) TkLightBlue else TkMain,
+                    contentColor = if (item.location == storageString) TkGreen else TkWhite,
                     disabledContainerColor = TkMain.copy(alpha = 0.8f)
                 ),
                 enabled = enabled,
                 onClick = {
-                    if (item.location != newStorageString) {
+                    if (item.location != storageString) {
                         onReturnButtonClick.invoke()
                     }
                 }) {
@@ -321,7 +286,7 @@ fun EquipItemLayout(
                             strokeWidth = 2.dp
                         )
                     }
-                    item.location == newStorageString -> {
+                    item.location == storageString -> {
                         Icon(
                             modifier = Modifier.size(24.dp),
                             painter = painterResource(Res.drawable.ic_ok),
