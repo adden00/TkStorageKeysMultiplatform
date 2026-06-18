@@ -52,7 +52,7 @@ fun EnterPasswordScreen(
     val passwordEditText = remember { mutableStateOf("") }
 
     LaunchedEffect("checkName") {
-        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
+        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB && !appSettings.inventoryMode) {
             navigator.replace(Screens.Reception())
         }
     }

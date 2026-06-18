@@ -61,10 +61,11 @@ class BackendApiService(
         keyholderName: String,
         id: String,
         item: EquipItem,
+        historyAction: String,
     ): EquipResponse =
         api.put("$base/items/update/$id") {
             contentType(ContentType.Application.Json)
-            setBody(UpdateItemRequest(newItem = item.toDto(), keyholderName = keyholderName))
+            setBody(UpdateItemRequest(newItem = item.toDto(), keyholderName = keyholderName, historyAction = historyAction))
         }.body()
 
     override suspend fun getItemHistory(id: String): ItemHistoryResponse =

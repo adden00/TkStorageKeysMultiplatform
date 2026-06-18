@@ -18,7 +18,7 @@ interface StorageApi {
 
     suspend fun getFreeId(): IdResponse
 
-    suspend fun updateItem(keyholderName: String, id: String, item: EquipItem): EquipResponse
+    suspend fun updateItem(keyholderName: String, id: String, item: EquipItem, historyAction: String): EquipResponse
 
     suspend fun addItem(keyholderName: String, item: EquipItem): EquipResponse
 

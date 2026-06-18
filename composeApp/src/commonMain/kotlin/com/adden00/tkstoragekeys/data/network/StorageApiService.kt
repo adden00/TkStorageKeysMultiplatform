@@ -62,6 +62,7 @@ class StorageApiService(
         keyholderName: String,
         id: String,
         item: EquipItem,
+        historyAction: String,
     ): EquipResponse {
         val url = URLBuilder("$baseUrl/$HASH/exec").apply {
             parameters.append("keyholderName", keyholderName)

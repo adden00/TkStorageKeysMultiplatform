@@ -30,7 +30,7 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
 
     fun obtainEvent(viewEvent: PeopleSearchScreenEvent) {
         when (viewEvent) {
-            is PeopleSearchScreenEvent.GetInfo -> {
+            is PeopleSearchScreenEvent.Search -> {
                 if (viewState.value.isSearching) return
                 _viewState.update { it.copy(isSearching = true) }
                 viewModelScope.launch {
