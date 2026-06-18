@@ -4,6 +4,7 @@ import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
 import com.adden00.tkstoragekeys.data.model.ExportFormat
+import com.adden00.tkstoragekeys.data.model.ExportSheetsResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 
@@ -26,5 +27,7 @@ interface StorageApi {
     suspend fun getItemHistory(id: String): ItemHistoryResponse
 
     suspend fun exportItems(format: ExportFormat): ByteArray
+
+    suspend fun exportToSheets(): ExportSheetsResponse
 
 }

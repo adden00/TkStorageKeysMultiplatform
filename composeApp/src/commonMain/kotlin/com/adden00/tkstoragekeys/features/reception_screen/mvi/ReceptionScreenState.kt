@@ -16,4 +16,5 @@ data class ReceptionScreenState(
     val enteredEventText: String = "",
     val notFoundedId: String? = null,
     val exportingFormat: ExportFormat? = null,
+    val isExportingToSheets: Boolean = false,
 )

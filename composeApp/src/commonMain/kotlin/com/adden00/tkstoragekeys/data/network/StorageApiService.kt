@@ -5,6 +5,7 @@ import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
 import com.adden00.tkstoragekeys.data.model.ExportFormat
+import com.adden00.tkstoragekeys.data.model.ExportSheetsResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 import io.ktor.client.HttpClient
@@ -115,6 +116,10 @@ class StorageApiService(
     }
 
     override suspend fun exportItems(format: ExportFormat): ByteArray {
+        TODO("Not supported by Google Apps Script API")
+    }
+
+    override suspend fun exportToSheets(): ExportSheetsResponse {
         TODO("Not supported by Google Apps Script API")
     }
 
