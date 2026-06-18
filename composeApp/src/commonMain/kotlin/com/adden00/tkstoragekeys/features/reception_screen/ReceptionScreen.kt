@@ -318,6 +318,22 @@ fun ReceptionScreen(
                                     viewModel.obtainEvent(ReceptionScreenEvent.Export(ExportFormat.XLS))
                                 }
                             )
+                            DropdownMenuItem(
+                                enabled = !state.value.isExportingToSheets,
+                                text = { Text("Экспорт в Google Sheets") },
+                                trailingIcon = if (state.value.isExportingToSheets) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.ExportToSheets)
+                                }
+                            )
                         }
                     }
                 }

@@ -64,6 +64,11 @@ class StorageRepository(
     }
 
     suspend fun exportItems(format: ExportFormat): ByteArray = api.exportItems(format)
+
+    suspend fun exportToSheets() {
+        val response = api.exportToSheets()
+        if (!response.success) throw EquipNotFoundException(response.message)
+    }
 }
 
 class EquipNotFoundException(override val message: String? = null) : RuntimeException(message)

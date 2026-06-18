@@ -12,6 +12,7 @@ import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewM
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionViewModel
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -37,6 +38,10 @@ private fun dataModule() = module {
                         println("Custom Log: $message")
                     }
                 }
+            }
+
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30_000
             }
 
             install(ContentNegotiation) {

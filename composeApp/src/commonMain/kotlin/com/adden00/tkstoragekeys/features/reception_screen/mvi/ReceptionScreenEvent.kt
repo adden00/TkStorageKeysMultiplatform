@@ -13,6 +13,7 @@ sealed class ReceptionScreenEvent {
     data class ShowUpdatedItem(val itemId: String) : ReceptionScreenEvent()
     data object DismissNotExistsDialog : ReceptionScreenEvent()
     data class Export(val format: ExportFormat) : ReceptionScreenEvent()
+    data object ExportToSheets : ReceptionScreenEvent()
 }
 
 enum class UpdateType {

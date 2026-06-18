@@ -147,6 +147,21 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                 }
             }
 
+            is ReceptionScreenEvent.ExportToSheets -> {
+                if (_viewState.value.isExportingToSheets) return
+                _viewState.update { it.copy(isExportingToSheets = true) }
+                viewModelScope.launch {
+                    try {
+                        storageRepository.exportToSheets()
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Экспорт в Google Sheets выполнен"))
+                    } catch (e: Exception) {
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
+                    } finally {
+                        _viewState.update { it.copy(isExportingToSheets = false) }
+                    }
+                }
+            }
+
         }
     }
 }
