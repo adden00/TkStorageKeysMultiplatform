@@ -43,6 +43,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -246,6 +251,7 @@ fun ReceptionScreen(
                     OutlinedIconButton(
                         onClick = {
                             appSettings.keyHolderName = ""
+                            appSettings.inventoryMode = false
                             navigator.replace(Screens.EnterPassword)
                         }
                     ) {
@@ -350,7 +356,13 @@ fun ReceptionScreen(
                     OutlinedTextField(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(bottom = 8.dp),
+                            .padding(bottom = 8.dp)
+                            .onPreviewKeyEvent { event ->
+                                if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                    viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
+                                    true
+                                } else false
+                            },
                         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                         value = state.value.enteredSearchText,
                         onValueChange = {

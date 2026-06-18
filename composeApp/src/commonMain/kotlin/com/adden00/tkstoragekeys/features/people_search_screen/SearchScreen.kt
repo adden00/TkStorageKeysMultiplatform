@@ -36,6 +36,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -105,8 +110,10 @@ fun SearchScreen(
             Text("Поиск снаряжения")
             Spacer(modifier = Modifier.height(4.dp))
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.PaddingHorizontal),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedIconButton(
                     onClick = {
@@ -120,21 +127,18 @@ fun SearchScreen(
                     )
                 }
 
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+                Spacer(modifier = Modifier.width(8.dp))
 
                 OutlinedTextField(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(bottom = 8.dp),
+                        .padding(bottom = 8.dp)
+                        .onPreviewKeyEvent { event ->
+                            if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                viewModel.obtainEvent(PeopleSearchScreenEvent.Search(state.value.enteredSearchText))
+                                true
+                            } else false
+                        },
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                     value = state.value.enteredSearchText,
                     onValueChange = {
@@ -148,11 +152,11 @@ fun SearchScreen(
                         unfocusedLabelColor = TkGrey
                     ),
                     label = {
-                        Text("название, место, мероприятие, цвет и т.д.")
+                        Text("название, место, и т.д.")
                     },
                     keyboardActions = KeyboardActions(
                         onSearch = {
-                            viewModel.obtainEvent(PeopleSearchScreenEvent.GetInfo(state.value.enteredSearchText))
+                            viewModel.obtainEvent(PeopleSearchScreenEvent.Search(state.value.enteredSearchText))
                         }
                     )
                 )
@@ -166,7 +170,7 @@ fun SearchScreen(
                     ),
                     enabled = state.value.enteredSearchText.isNotEmpty() && !state.value.isBusy(),
                     onClick = {
-                        viewModel.obtainEvent(PeopleSearchScreenEvent.GetInfo(state.value.enteredSearchText))
+                        viewModel.obtainEvent(PeopleSearchScreenEvent.Search(state.value.enteredSearchText))
                     }) {
                     if (state.value.isSearching) {
                         Spacer(modifier = Modifier.width(8.dp))

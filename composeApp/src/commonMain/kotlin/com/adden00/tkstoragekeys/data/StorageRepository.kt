@@ -25,11 +25,12 @@ class StorageRepository(
         return response.items.map { it.toEquipItem() }
     }
 
-    suspend fun updateItem(id: String, item: EquipItem): EquipItem {
+    suspend fun updateItem(id: String, item: EquipItem, historyAction: String = "ОБНОВЛЕНО"): EquipItem {
         val response = api.updateItem(
-            appSettings.keyHolderName,
-            id,
-            item
+            keyholderName = appSettings.keyHolderName,
+            id = id,
+            item = item,
+            historyAction = historyAction
         )
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)
