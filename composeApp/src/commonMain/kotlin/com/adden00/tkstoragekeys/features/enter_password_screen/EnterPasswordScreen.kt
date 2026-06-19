@@ -57,9 +57,11 @@ fun EnterPasswordScreen(
         }
     }
 
-    Scaffold(modifier = Modifier
-        .fillMaxSize()
-        .imePadding(), snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding(),
+        snackbarHost = { SnackbarHost(snackbarHostState) }) { innerPadding ->
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
@@ -81,23 +83,23 @@ fun EnterPasswordScreen(
                     }
                 )
 
-                    OutlinedTextField(
-                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                        value = passwordEditText.value,
-                        onValueChange = {
-                            passwordEditText.value = it
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Number,
-                            imeAction = ImeAction.Done
-                        ),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedLabelColor = TkGrey
-                        ),
-                        label = {
-                            Text("Введите ключ")
-                        }
-                    )
+                OutlinedTextField(
+                    shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
+                    value = passwordEditText.value,
+                    onValueChange = {
+                        passwordEditText.value = it
+                    },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Done
+                    ),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedLabelColor = TkGrey
+                    ),
+                    label = {
+                        Text("Введите ключ")
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(32.dp))
 

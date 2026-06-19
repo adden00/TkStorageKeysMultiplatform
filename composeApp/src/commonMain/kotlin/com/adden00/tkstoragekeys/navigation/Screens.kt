@@ -18,6 +18,7 @@ import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryScreen
 import com.adden00.tkstoragekeys.features.people_search_screen.SearchScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
+import kotlin.jvm.Transient
 
 object Screens {
 
