@@ -536,7 +536,7 @@ fun ReceptionScreen(
                             }
                             .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
                         style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
-                        text = if (appSettings.inventoryMode) "инвентаризовать" else stringResource(Res.string.edit)
+                        text = stringResource(Res.string.edit)
                     )
 
                     Text(
@@ -554,8 +554,47 @@ fun ReceptionScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(16.dp))
 
+                if (appSettings.inventoryMode) {
+                    Button(
+                        onClick = {
+                            state.value.currentEquipItem?.let { equipItem ->
+                                viewModel.obtainEvent(
+                                    ReceptionScreenEvent.UpdateInfo(
+                                        equipItem.id,
+                                        equipItem.copy(
+                                            location = storageString,
+                                            event = "",
+                                            date = DateUtils.getCurrentDate()
+                                        ),
+                                        updateType = UpdateType.MOVING_NO_NEW_STORAGE
+                                    )
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TkMain,
+                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                        ),
+                        enabled = state.value.currentEquipItem?.let {
+                            !state.value.isBusy() && !it.isOnStorage()
+                        } ?: false
+                    ) {
+                        Text(
+                            text = "Инвентаризовать"
+                        )
+                        if (state.value.isMovingToNewStorage) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = TkWhite,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
 
-                if (state.value.currentEquipItem != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                } else if (state.value.currentEquipItem != null) {
                     Text(
                         "Выдача снаряжения",
                         style = TextStyle(
