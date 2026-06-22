@@ -6,7 +6,7 @@ class AppSettings(private val settings: Settings) {
 
     companion object {
         private const val KEYHOLDER_NAME = "KEYHOLDER_NAME"
-        private const val INVENTORY_MODE = "INVENTORY_MODE"
+        private const val INVENTORISATION_MODE = "INVENTORISATION_MODE"
     }
 
     var keyHolderName: String
@@ -15,9 +15,11 @@ class AppSettings(private val settings: Settings) {
             settings.putString(KEYHOLDER_NAME, value)
         }
 
-    var inventoryMode: Boolean
-        get() = settings.getBoolean(INVENTORY_MODE, false)
+    var inventoryMode: Boolean?
+        get() = settings.getBooleanOrNull(INVENTORISATION_MODE)
         set(value) {
-            settings.putBoolean(INVENTORY_MODE, value)
+            value?.let {
+                settings.putBoolean(INVENTORISATION_MODE, value)
+            }
         }
 }

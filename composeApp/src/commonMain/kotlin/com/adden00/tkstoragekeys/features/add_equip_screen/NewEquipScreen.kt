@@ -478,7 +478,7 @@ fun NewEquipScreen(
                 Text(
                     text = when {
                         state.value.updatingItemId == "" -> "Добавить"
-                        appSettings.inventoryMode -> "инвентаризовать"
+                        appSettings.inventoryMode == true -> "инвентаризовать"
                         else -> "изменить"
                     }
                 )
