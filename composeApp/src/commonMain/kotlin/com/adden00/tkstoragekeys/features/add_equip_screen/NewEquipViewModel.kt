@@ -106,7 +106,7 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                             storageRepository.updateItem(
                                 id = id,
                                 item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate()),
-                                historyAction = if (appSettings.inventoryMode) {
+                                historyAction = if (appSettings.inventoryMode == true) {
                                     "ИНВЕНТАРИЗОВАНО"
                                 } else {
                                     "ОБНОВЛЕНО"

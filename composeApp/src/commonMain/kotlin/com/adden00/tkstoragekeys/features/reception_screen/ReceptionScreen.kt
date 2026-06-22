@@ -530,7 +530,7 @@ fun ReceptionScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                val target = if (appSettings.inventoryMode)
+                                val target = if (appSettings.inventoryMode == true)
                                     equipItem.copy(location = storageString, event = "") else equipItem
                                 navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                             }
@@ -554,7 +554,7 @@ fun ReceptionScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (appSettings.inventoryMode) {
+                if (appSettings.inventoryMode == true) {
                     Button(
                         onClick = {
                             state.value.currentEquipItem?.let { equipItem ->
