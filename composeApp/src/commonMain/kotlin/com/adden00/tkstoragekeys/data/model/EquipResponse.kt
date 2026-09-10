@@ -32,12 +32,14 @@ data class EquipDto(
     @SerialName("event") val event: String = "",
     @SerialName("info") val info: String = "",
     @SerialName("date") val date: String = "",
+    // null — поле не уходит в запросе, сервер сам решает судьбу привязки; "" — привязку сняли
+    @SerialName("locationUserId") val locationUserId: String? = null,
 )
 
 fun EquipDto.toEquipItem() = EquipItem(
-    id, category, brand, name, color, weigh, quality.extractQuality(), location, event, info, date
+    id, category, brand, name, color, weigh, quality.extractQuality(), location, event, info, date, locationUserId
 )
 
 fun EquipItem.toDto() = EquipDto(
-    id, category, brand, name, color, weigh, quality?.value.orEmpty(), location, event, info, date
+    id, category, brand, name, color, weigh, quality?.value.orEmpty(), location, event, info, date, locationUserId
 )

@@ -1,5 +1,6 @@
 package com.adden00.tkstoragekeys.features.reception_screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -65,11 +66,14 @@ import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.Quality
+import com.adden00.tkstoragekeys.data.model.WAREHOUSE_ID
 import com.adden00.tkstoragekeys.data.model.isOnStorage
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenState
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.UpdateType
+import com.adden00.tkstoragekeys.features.users_search.LocationPickerField
+import com.adden00.tkstoragekeys.features.users_search.PersonPickerSheet
 import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
 import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
@@ -115,6 +119,22 @@ fun ReceptionScreen(
 
     val fileSaverLauncher = rememberFileSaverLauncher { /* no action needed after save */ }
 
+    val showPersonPicker = remember { mutableStateOf(false) }
+
+    if (showPersonPicker.value) {
+        PersonPickerSheet(
+            onDismiss = { showPersonPicker.value = false },
+            onPicked = { pick ->
+                showPersonPicker.value = false
+                viewModel.obtainEvent(ReceptionScreenEvent.OnLocationPicked(pick))
+            },
+            onOpenDetails = { userId ->
+                showPersonPicker.value = false
+                navigator.push(Screens.PersonDetails(userId))
+            }
+        )
+    }
+
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
             when (effect) {
@@ -154,7 +174,8 @@ fun ReceptionScreen(
                         navigator.push(
                             Screens.AddNewEquip(
                                 startItem = EquipItem(
-                                    location = storageString
+                                    location = storageString,
+                                    locationUserId = WAREHOUSE_ID
                                 )
                             )
                         )
@@ -206,7 +227,8 @@ fun ReceptionScreen(
                                             Screens.AddNewEquip(
                                                 startItem = EquipItem(
                                                     id = id,
-                                                    location = storageString
+                                                    location = storageString,
+                                                    locationUserId = WAREHOUSE_ID
                                                 )
                                             )
                                         )
@@ -252,6 +274,7 @@ fun ReceptionScreen(
                         onClick = {
                             appSettings.keyHolderName = ""
                             appSettings.inventoryMode = false
+                            appSettings.isTestEnv = false
                             navigator.replace(Screens.EnterPassword)
                         }
                     ) {
@@ -270,6 +293,15 @@ fun ReceptionScreen(
                             textAlign = TextAlign.Center
                         )
                     )
+                    if (appSettings.isTestEnv) {
+                        Text(
+                            modifier = Modifier
+                                .background(TkRed, RoundedCornerShape(4.dp))
+                                .padding(horizontal = 4.dp, vertical = 2.dp),
+                            text = "TEST",
+                            style = TextStyle(fontSize = 11.sp, color = TkWhite)
+                        )
+                    }
                     Spacer(modifier = Modifier.width(8.dp))
                     val menuExpanded = remember { mutableStateOf(false) }
                     Box {
@@ -337,6 +369,22 @@ fun ReceptionScreen(
                                 onClick = {
                                     menuExpanded.value = false
                                     viewModel.obtainEvent(ReceptionScreenEvent.ExportToSheets)
+                                }
+                            )
+                            DropdownMenuItem(
+                                enabled = !state.value.isImportingUsers,
+                                text = { Text("Обновить справочник людей") },
+                                trailingIcon = if (state.value.isImportingUsers) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.ImportUsers)
                                 }
                             )
                         }
@@ -495,13 +543,14 @@ fun ReceptionScreen(
                         Text(
                             text = "Местоположение: ",
                         )
+                        val personId = equipItem.locationUserId
                         Text(
+                            modifier = if (!personId.isNullOrEmpty()) {
+                                Modifier.clickable { navigator.push(Screens.PersonDetails(personId)) }
+                            } else Modifier,
                             text = equipItem.location,
                             style = TextStyle(
-                                color = when (state.value.currentEquipItem?.location) {
-                                    storageString -> TkGreen
-                                    else -> TkYellow
-                                },
+                                color = if (equipItem.isOnStorage()) TkGreen else TkYellow,
                                 fontSize = 20.sp,
                                 textDecoration = TextDecoration.Underline
                             )
@@ -530,8 +579,10 @@ fun ReceptionScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
+                                // locationUserId = null: место не трогали, сервер сохранит привязку сам
                                 val target = if (appSettings.inventoryMode == true)
-                                    equipItem.copy(location = storageString, event = "") else equipItem
+                                    equipItem.copy(location = storageString, event = "", locationUserId = WAREHOUSE_ID)
+                                else equipItem.copy(locationUserId = null)
                                 navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                             }
                             .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
@@ -563,6 +614,7 @@ fun ReceptionScreen(
                                         equipItem.id,
                                         equipItem.copy(
                                             location = storageString,
+                                            locationUserId = WAREHOUSE_ID,
                                             event = "",
                                             date = DateUtils.getCurrentDate()
                                         ),
@@ -603,21 +655,13 @@ fun ReceptionScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    OutlinedTextField(
+                    LocationPickerField(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = Dimens.PaddingHorizontal),
-                        value = state.value.enteredLocationText,
-                        onValueChange = {
-                            viewModel.obtainEvent(ReceptionScreenEvent.OnLocationTextChanged(it))
-                        },
-                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedLabelColor = TkGrey
-                        ),
-                        label = {
-                            Text("ФИО")
-                        }
+                        value = state.value.selectedLocation?.name.orEmpty(),
+                        label = "ФИО",
+                        onClick = { showPersonPicker.value = true }
                     )
 
                     Spacer(modifier = Modifier.height(4.dp))
@@ -650,6 +694,7 @@ fun ReceptionScreen(
                                             equipItem.id,
                                             equipItem.copy(
                                                 location = storageString,
+                                                locationUserId = WAREHOUSE_ID,
                                                 event = "",
                                                 date = DateUtils.getCurrentDate()
                                             ),
@@ -682,12 +727,14 @@ fun ReceptionScreen(
 
                         Button(
                             onClick = {
+                                val pick = state.value.selectedLocation ?: return@Button
                                 state.value.currentEquipItem?.let { equipItem ->
                                     viewModel.obtainEvent(
                                         ReceptionScreenEvent.UpdateInfo(
                                             equipItem.id,
                                             equipItem.copy(
-                                                location = state.value.enteredLocationText,
+                                                location = pick.name,
+                                                locationUserId = pick.userId,
                                                 event = state.value.enteredEventText,
                                                 date = DateUtils.getCurrentDate()
                                             ),
@@ -697,7 +744,7 @@ fun ReceptionScreen(
                                 }
                             },
                             shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                            enabled = state.value.currentEquipItem != null && state.value.enteredLocationText.isNotEmpty() && !state.value.isBusy(),
+                            enabled = state.value.currentEquipItem != null && state.value.selectedLocation != null && !state.value.isBusy(),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = TkYellow,
                                 disabledContainerColor = TkYellow.copy(alpha = 0.8f)

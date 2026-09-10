@@ -16,6 +16,7 @@ import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
 import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryScreen
 import com.adden00.tkstoragekeys.features.people_search_screen.SearchScreen
+import com.adden00.tkstoragekeys.features.person_details_screen.PersonDetailsScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
 import kotlin.jvm.Transient
@@ -68,6 +69,13 @@ object Screens {
         @Composable
         override fun Content() {
             ItemHistoryScreen(itemId = itemId)
+        }
+    }
+
+    data class PersonDetails(val userId: String) : Screen {
+        @Composable
+        override fun Content() {
+            PersonDetailsScreen(userId = userId)
         }
     }
 }

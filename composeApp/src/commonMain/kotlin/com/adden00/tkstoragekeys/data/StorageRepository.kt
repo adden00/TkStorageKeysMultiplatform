@@ -1,9 +1,13 @@
 package com.adden00.tkstoragekeys.data
 
 import com.adden00.tkstoragekeys.data.local.AppSettings
+import com.adden00.tkstoragekeys.data.model.ClubUser
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.ItemHistoryEntry
+import com.adden00.tkstoragekeys.data.model.UserSearchResult
+import com.adden00.tkstoragekeys.data.model.toClubUser
+import com.adden00.tkstoragekeys.data.model.toClubUserShort
 import com.adden00.tkstoragekeys.data.model.toEquipItem
 import com.adden00.tkstoragekeys.data.model.toItemHistoryEntry
 import com.adden00.tkstoragekeys.data.network.StorageApi
@@ -64,6 +68,39 @@ class StorageRepository(
     suspend fun exportToSheets() {
         val response = api.exportToSheets()
         if (!response.success) throw EquipNotFoundException(response.message)
+    }
+
+    suspend fun searchUsers(query: String): UserSearchResult {
+        val response = api.searchUsers(query.trim())
+        if (!response.success) throw EquipNotFoundException(response.message)
+        return UserSearchResult(
+            users = response.users.map { it.toClubUserShort() },
+            hasMore = response.hasMore,
+            message = response.message
+        )
+    }
+
+    suspend fun getUser(id: String): ClubUser {
+        val response = api.getUser(id)
+        if (!response.success || response.user == null) {
+            throw EquipNotFoundException()
+        } else return response.user.toClubUser()
+    }
+
+    suspend fun getUserItems(id: String): List<EquipItem> {
+        val response = api.getUserItems(id)
+        if (!response.success) throw EquipNotFoundException(response.message)
+        return response.items.map { it.toEquipItem() }
+    }
+
+    /** @return текст для пользователя об итогах импорта */
+    suspend fun importUsers(): String {
+        val response = api.importUsers()
+        if (!response.success) throw EquipNotFoundException(response.message)
+        return listOfNotNull(
+            response.importedCount?.let { "Импортировано записей: $it" },
+            response.message
+        ).joinToString(". ").ifEmpty { "Справочник обновлён" }
     }
 }
 

@@ -10,10 +10,14 @@ import com.adden00.tkstoragekeys.data.model.ExportSheetsResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 import com.adden00.tkstoragekeys.data.model.UpdateItemRequest
+import com.adden00.tkstoragekeys.data.model.UserResponse
+import com.adden00.tkstoragekeys.data.model.UserSearchResponse
+import com.adden00.tkstoragekeys.data.model.UsersImportResponse
 import com.adden00.tkstoragekeys.data.model.toDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
@@ -24,10 +28,11 @@ import io.ktor.http.contentType
 
 class BackendApiService(
     api: HttpClient,
-    baseUrl: String
+    private val baseUrlProvider: () -> String,
 ) : StorageApi {
 
-    private val base = baseUrl.trimEnd('/')
+    // окружение переключается при логине, поэтому адрес читаем на каждый запрос
+    private val base: String get() = baseUrlProvider().trimEnd('/')
     private val api = api.config {
         defaultRequest {
             header("X-App-Version-Code", Constants.VERSION_CODE.toString())
@@ -76,4 +81,21 @@ class BackendApiService(
 
     override suspend fun exportToSheets(): ExportSheetsResponse =
         api.post("$base/items/export/sheets").body()
+
+    override suspend fun searchUsers(query: String): UserSearchResponse =
+        api.get("$base/users/search") {
+            url { parameters.append("query", query) }
+        }.body()
+
+    override suspend fun getUser(id: String): UserResponse =
+        api.get("$base/users/$id").body()
+
+    override suspend fun getUserItems(id: String): EquipsResponse =
+        api.get("$base/users/$id/items").body()
+
+    override suspend fun importUsers(): UsersImportResponse =
+        api.post("$base/users/import/sheets") {
+            // импорт справочника идёт около минуты
+            timeout { requestTimeoutMillis = 120_000 }
+        }.body()
 }
