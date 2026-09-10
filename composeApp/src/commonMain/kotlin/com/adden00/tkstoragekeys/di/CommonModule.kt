@@ -1,13 +1,17 @@
 package com.adden00.tkstoragekeys.di
 
+import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.StorageRepository
 import com.adden00.tkstoragekeys.data.local.AppSettings
-import com.adden00.tkstoragekeys.data.network.StorageApiService
+import com.adden00.tkstoragekeys.data.network.BackendApiService
+import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
+import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
 import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionViewModel
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
@@ -18,7 +22,8 @@ import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-private const val BASE_API_URL = "https://script.google.com/macros/s"
+private const val SPRING_API_URL = Constants.SPRING_BASE_URL
+
 private fun dataModule() = module {
 
     factory<HttpClient> {
@@ -33,6 +38,10 @@ private fun dataModule() = module {
                 }
             }
 
+            install(HttpTimeout) {
+                requestTimeoutMillis = 30_000
+            }
+
             install(ContentNegotiation) {
                 json(Json {
                     ignoreUnknownKeys = true
@@ -41,11 +50,8 @@ private fun dataModule() = module {
         }
     }
 
-    factory<StorageApiService> {
-        StorageApiService(
-            api = get(),
-            baseUrl = BASE_API_URL
-        )
+    factory<StorageApi> {
+        BackendApiService(api = get(), baseUrl = SPRING_API_URL)
     }
 
     factory<AppSettings> {
@@ -56,13 +62,12 @@ private fun dataModule() = module {
 
     factory<StorageRepository> {
         StorageRepository(
-            api = get(),
+            api = get<StorageApi>(),
             appSettings = get()
         )
     }
 
 }
-
 
 fun viewModelModule() = module {
     viewModel {
@@ -75,6 +80,10 @@ fun viewModelModule() = module {
 
     viewModel {
         PeopleSearchViewModel()
+    }
+
+    viewModel {
+        ItemHistoryViewModel()
     }
 }
 

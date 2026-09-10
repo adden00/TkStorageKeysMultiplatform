@@ -118,15 +118,48 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                 _viewState.update { it.copy(enteredLocationText = viewEvent.text) }
             }
 
-            is ReceptionScreenEvent.UpdateEquipItem -> {
-                _viewState.update { it.copy(currentEquipItem = viewEvent.item) }
+            is ReceptionScreenEvent.ShowUpdatedItem -> {
                 viewModelScope.launch {
-                    _viewEffect.send(ReceptionScreenEffect.ShowToast("Обновлено: ${viewEvent.item.id}"))
+                    _viewEffect.send(ReceptionScreenEffect.ShowToast("Обновлено: ${viewEvent.itemId}"))
                 }
+            }
+
+            is ReceptionScreenEvent.SetItem -> {
+                _viewState.update { it.copy(currentEquipItem = viewEvent.item) }
             }
 
             is ReceptionScreenEvent.DismissNotExistsDialog -> {
                 _viewState.update { it.copy(isNumberNoxExistsShown = false, notFoundedId = null) }
+            }
+
+            is ReceptionScreenEvent.Export -> {
+                if (_viewState.value.exportingFormat != null) return
+                _viewState.update { it.copy(exportingFormat = viewEvent.format) }
+                viewModelScope.launch {
+                    try {
+                        val bytes = storageRepository.exportItems(viewEvent.format)
+                        _viewEffect.send(ReceptionScreenEffect.SaveFile(bytes, viewEvent.format.extension))
+                    } catch (e: Exception) {
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
+                    } finally {
+                        _viewState.update { it.copy(exportingFormat = null) }
+                    }
+                }
+            }
+
+            is ReceptionScreenEvent.ExportToSheets -> {
+                if (_viewState.value.isExportingToSheets) return
+                _viewState.update { it.copy(isExportingToSheets = true) }
+                viewModelScope.launch {
+                    try {
+                        storageRepository.exportToSheets()
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Экспорт в Google Sheets выполнен"))
+                    } catch (e: Exception) {
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
+                    } finally {
+                        _viewState.update { it.copy(isExportingToSheets = false) }
+                    }
+                }
             }
 
         }

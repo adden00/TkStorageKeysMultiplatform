@@ -52,8 +52,8 @@ fun EnterPasswordScreen(
     val passwordEditText = remember { mutableStateOf("") }
 
     LaunchedEffect("checkName") {
-        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
-            navigator.replace(Screens.Reception)
+        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB && appSettings.inventoryMode == false) {
+            navigator.replace(Screens.Reception())
         }
     }
 
@@ -105,9 +105,10 @@ fun EnterPasswordScreen(
 
                 Button(
                     onClick = {
-                        if (passwordEditText.value == KEY) {
+                        if (passwordEditText.value == KEY || passwordEditText.value == INVENTORY_KEY) {
                             appSettings.keyHolderName = nameEditText.value
-                            navigator.replace(Screens.Reception)
+                            appSettings.inventoryMode = passwordEditText.value == INVENTORY_KEY
+                            navigator.replace(Screens.Reception())
                         } else {
                             CoroutineScope(Dispatchers.Main).launch {
                                 snackbarHostState.showSnackbar("Ключ неверный")
@@ -132,3 +133,4 @@ fun EnterPasswordScreen(
 }
 
 private const val KEY = "925720"
+private const val INVENTORY_KEY = "999999"

@@ -1,6 +1,7 @@
 package com.adden00.tkstoragekeys.features.reception_screen
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,11 +21,12 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -37,9 +39,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -55,6 +63,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.Quality
 import com.adden00.tkstoragekeys.data.model.isOnStorage
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
@@ -65,7 +74,6 @@ import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
 import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
 import com.adden00.tkstoragekeys.theme.Dimens
-import com.adden00.tkstoragekeys.theme.TkDark
 import com.adden00.tkstoragekeys.theme.TkGreen
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
@@ -73,30 +81,39 @@ import com.adden00.tkstoragekeys.theme.TkRed
 import com.adden00.tkstoragekeys.theme.TkWhite
 import com.adden00.tkstoragekeys.theme.TkYellow
 import com.adden00.tkstoragekeys.utils.DateUtils
+import io.github.vinceglb.filekit.compose.rememberFileSaverLauncher
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
+import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_menu
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
-import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
+import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
 @Composable
 fun ReceptionScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
     resultItem: State<EquipItem?> = navigatorExtension.getResult<EquipItem>("KEY"),
-    appSettings: AppSettings = koinInject()
+    appSettings: AppSettings = koinInject(),
+    startItem: EquipItem? = null,
 ) {
     val viewModel: ReceptionViewModel = koinViewModel()
 
-    val newStorageString = stringResource(Res.string.new_storage)
+    val storageString = stringResource(Res.string.storage)
+
+    val fromSearch = startItem != null
 
     val snackbarHostState = remember { SnackbarHostState() }
+
     val state = viewModel.viewState.collectAsState()
+
+    val fileSaverLauncher = rememberFileSaverLauncher { /* no action needed after save */ }
 
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
@@ -104,14 +121,23 @@ fun ReceptionScreen(
                 is ReceptionScreenEffect.ShowToast -> {
                     snackbarHostState.showSnackbar(effect.message)
                 }
+                is ReceptionScreenEffect.SaveFile -> {
+                    fileSaverLauncher.launch(
+                        bytes = effect.bytes,
+                        baseName = "Клубное снаряжение_${DateUtils.getCurrentDateTimeForFileName()}",
+                        extension = effect.extension
+                    )
+                }
             }
         }
     }
 
-    LaunchedEffect("result api") {
+    LaunchedEffect("initial value") {
         resultItem.value?.let { item ->
-            viewModel.obtainEvent(ReceptionScreenEvent.UpdateEquipItem(item))
+            viewModel.obtainEvent(ReceptionScreenEvent.SetItem(item))
+            viewModel.obtainEvent(ReceptionScreenEvent.ShowUpdatedItem(item.id))
         }
+        startItem?.let { viewModel.obtainEvent(ReceptionScreenEvent.SetItem(it)) }
     }
 
     Scaffold(
@@ -120,19 +146,21 @@ fun ReceptionScreen(
             .imePadding(),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
-            FloatingActionButton(
-                shape = CircleShape,
-                containerColor = TkMain,
-                onClick = {
-                    navigator.push(
-                        Screens.AddNewEquip(
-                            startItem = EquipItem(
-                                location = newStorageString
+            if (!fromSearch) {
+                FloatingActionButton(
+                    shape = CircleShape,
+                    containerColor = TkMain,
+                    onClick = {
+                        navigator.push(
+                            Screens.AddNewEquip(
+                                startItem = EquipItem(
+                                    location = storageString
+                                )
                             )
                         )
-                    )
-                }) {
-                Text("+", style = TextStyle(fontSize = 24.sp))
+                    }) {
+                    Text("+", style = TextStyle(fontSize = 24.sp))
+                }
             }
         }
     ) { innerPadding ->
@@ -178,7 +206,7 @@ fun ReceptionScreen(
                                             Screens.AddNewEquip(
                                                 startItem = EquipItem(
                                                     id = id,
-                                                    location = newStorageString
+                                                    location = storageString
                                                 )
                                             )
                                         )
@@ -200,119 +228,210 @@ fun ReceptionScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal)
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                OutlinedIconButton(
-                    onClick = {
-                        appSettings.keyHolderName = ""
-                        navigator.replace(Screens.EnterPassword)
+                if (fromSearch) {
+                    OutlinedIconButton(onClick = { navigator.pop() }) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(Res.drawable.ic_back),
+                            contentDescription = "back"
+                        )
                     }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_log_out),
-                        contentDescription = "back"
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "Выдача снаряжения",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
                     )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = "Поиск и выдача снаряжения",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                        textAlign = TextAlign.Center
-                    )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedButton(
-                    onClick = {
-                        navigator.push(Screens.Tutorial)
+                } else {
+                    OutlinedIconButton(
+                        onClick = {
+                            appSettings.keyHolderName = ""
+                            appSettings.inventoryMode = false
+                            navigator.replace(Screens.EnterPassword)
+                        }
+                    ) {
+                        Icon(
+                            modifier = Modifier.size(24.dp),
+                            painter = painterResource(Res.drawable.ic_log_out),
+                            contentDescription = "back"
+                        )
                     }
-                ) {
-                    Text("Памятка")
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        modifier = Modifier.weight(1f),
+                        text = "Поиск и выдача снаряжения",
+                        style = TextStyle(
+                            fontSize = 18.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    val menuExpanded = remember { mutableStateOf(false) }
+                    Box {
+                        OutlinedIconButton(onClick = { menuExpanded.value = true }) {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(Res.drawable.ic_menu),
+                                contentDescription = "menu"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded.value,
+                            onDismissRequest = { menuExpanded.value = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Памятка") },
+                                onClick = {
+                                    menuExpanded.value = false
+                                    navigator.push(Screens.Tutorial)
+                                }
+                            )
+                            DropdownMenuItem(
+                                enabled = state.value.exportingFormat == null,
+                                text = { Text("Экспорт CSV") },
+                                trailingIcon = if (state.value.exportingFormat == ExportFormat.CSV) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.Export(ExportFormat.CSV))
+                                }
+                            )
+                            DropdownMenuItem(
+                                enabled = state.value.exportingFormat == null,
+                                text = { Text("Экспорт XLS") },
+                                trailingIcon = if (state.value.exportingFormat == ExportFormat.XLS) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.Export(ExportFormat.XLS))
+                                }
+                            )
+                            DropdownMenuItem(
+                                enabled = !state.value.isExportingToSheets,
+                                text = { Text("Экспорт в Google Sheets") },
+                                trailingIcon = if (state.value.isExportingToSheets) {
+                                    {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(16.dp),
+                                            strokeWidth = 2.dp
+                                        )
+                                    }
+                                } else null,
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.ExportToSheets)
+                                }
+                            )
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            if (!fromSearch) {
+                Spacer(modifier = Modifier.height(4.dp))
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                    value = state.value.enteredSearchText,
-                    onValueChange = {
-                        viewModel.obtainEvent(ReceptionScreenEvent.OnSearchTextChanged(it))
-                    },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Search
-                    ),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedLabelColor = TkGrey
-                    ),
-                    label = {
-                        Text("Номер")
-                    },
-                    keyboardActions = KeyboardActions(
-                        onSearch = {
-                            viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
-                        }
-                    )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    modifier = Modifier.size(48.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = TkMain,
-                        contentColor = TkWhite,
-                        disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                    ),
-                    enabled = state.value.enteredSearchText.isNotEmpty() && !state.value.isBusy(),
-                    onClick = {
-                        viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
-                    }) {
-                    if (state.value.isSearching) {
-                        Spacer(modifier = Modifier.width(8.dp))
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = TkWhite,
-                            strokeWidth = 2.dp
+                        .fillMaxWidth()
+                        .padding(horizontal = Dimens.PaddingHorizontal),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 8.dp)
+                            .onPreviewKeyEvent { event ->
+                                if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                    viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
+                                    true
+                                } else false
+                            },
+                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
+                        value = state.value.enteredSearchText,
+                        onValueChange = {
+                            viewModel.obtainEvent(ReceptionScreenEvent.OnSearchTextChanged(it))
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Number,
+                            imeAction = ImeAction.Search
+                        ),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedLabelColor = TkGrey
+                        ),
+                        label = {
+                            Text("Номер")
+                        },
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
+                            }
                         )
-                    } else {
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = TkMain,
+                            contentColor = TkWhite,
+                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                        ),
+                        enabled = state.value.enteredSearchText.isNotEmpty() && !state.value.isBusy(),
+                        onClick = {
+                            viewModel.obtainEvent(ReceptionScreenEvent.GetInfo(state.value.enteredSearchText))
+                        }) {
+                        if (state.value.isSearching) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = TkWhite,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                modifier = Modifier.size(24.dp),
+                                painter = painterResource(Res.drawable.ic_search),
+                                contentDescription = "search"
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = TkMain,
+                            contentColor = TkWhite,
+                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                        ),
+                        onClick = {
+                            navigator.push(
+                                Screens.Search
+                            )
+                        }) {
                         Icon(
                             modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_search),
+                            painter = painterResource(Res.drawable.ic_people_search),
                             contentDescription = "search"
                         )
+
                     }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    modifier = Modifier.size(48.dp),
-                    colors = IconButtonDefaults.iconButtonColors(
-                        containerColor = TkMain,
-                        contentColor = TkWhite,
-                        disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                    ),
-                    onClick = {
-                        navigator.push(
-                            Screens.PeopleSearch
-                        )
-                    }) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_people_search),
-                        contentDescription = "search"
-                    )
-
                 }
             }
 
@@ -380,8 +499,7 @@ fun ReceptionScreen(
                             text = equipItem.location,
                             style = TextStyle(
                                 color = when (state.value.currentEquipItem?.location) {
-                                    "склад" -> TkGreen
-                                    "новый склад" -> TkDark
+                                    storageString -> TkGreen
                                     else -> TkYellow
                                 },
                                 fontSize = 20.sp,
@@ -412,19 +530,71 @@ fun ReceptionScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = equipItem))
+                                val target = if (appSettings.inventoryMode == true)
+                                    equipItem.copy(location = storageString, event = "") else equipItem
+                                navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                             }
                             .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
                         style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
                         text = stringResource(Res.string.edit)
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                navigator.push(Screens.ItemHistory(itemId = equipItem.id))
+                            }
+                            .padding(horizontal = Dimens.PaddingHorizontal, vertical = 4.dp),
+                        style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
+                        text = "История"
                     )
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(16.dp))
 
+                if (appSettings.inventoryMode == true) {
+                    Button(
+                        onClick = {
+                            state.value.currentEquipItem?.let { equipItem ->
+                                viewModel.obtainEvent(
+                                    ReceptionScreenEvent.UpdateInfo(
+                                        equipItem.id,
+                                        equipItem.copy(
+                                            location = storageString,
+                                            event = "",
+                                            date = DateUtils.getCurrentDate()
+                                        ),
+                                        updateType = UpdateType.MOVING_NO_NEW_STORAGE
+                                    )
+                                )
+                            }
+                        },
+                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = TkMain,
+                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
+                        ),
+                        enabled = state.value.currentEquipItem?.let {
+                            !state.value.isBusy() && !it.isOnStorage()
+                        } ?: false
+                    ) {
+                        Text(
+                            text = "Инвентаризовать"
+                        )
+                        if (state.value.isMovingToNewStorage) {
+                            Spacer(modifier = Modifier.width(8.dp))
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                color = TkWhite,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    }
 
-                if (state.value.currentEquipItem != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                } else if (state.value.currentEquipItem != null) {
                     Text(
                         "Выдача снаряжения",
                         style = TextStyle(
@@ -479,7 +649,7 @@ fun ReceptionScreen(
                                         ReceptionScreenEvent.UpdateInfo(
                                             equipItem.id,
                                             equipItem.copy(
-                                                location = newStorageString,
+                                                location = storageString,
                                                 event = "",
                                                 date = DateUtils.getCurrentDate()
                                             ),
@@ -497,7 +667,7 @@ fun ReceptionScreen(
                                 !state.value.isBusy() && !it.isOnStorage()
                             } ?: false
                         ) {
-                            Text("на новый склад")
+                            Text("на склад")
                             if (state.value.isMovingToNewStorage) {
                                 Spacer(modifier = Modifier.width(8.dp))
                                 CircularProgressIndicator(

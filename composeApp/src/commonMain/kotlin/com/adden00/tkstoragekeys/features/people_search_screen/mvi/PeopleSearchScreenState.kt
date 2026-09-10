@@ -6,7 +6,6 @@ data class PeopleSearchScreenState(
     val isSearching: Boolean = false,
     val isReturning: Boolean = false,
     val currentEquipList: List<EquipItem> = listOf(),
-    val isNumberNoxExistsShown: Boolean = false,
     val enteredSearchText: String = "",
 )
 

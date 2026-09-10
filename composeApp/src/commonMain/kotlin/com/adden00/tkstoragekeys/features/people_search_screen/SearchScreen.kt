@@ -1,5 +1,7 @@
 package com.adden00.tkstoragekeys.features.people_search_screen
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -34,6 +36,11 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -46,11 +53,11 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.isBusy
 import com.adden00.tkstoragekeys.theme.Dimens
-import com.adden00.tkstoragekeys.theme.TkDark
 import com.adden00.tkstoragekeys.theme.TkGreen
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkLightBlue
@@ -65,15 +72,14 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_ok
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_return
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
-import tkstoragekeysmultiplatform.composeapp.generated.resources.new_storage
+import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
 @Composable
-fun PeopleSearchScreen(
+fun SearchScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
 ) {
     val viewModel: PeopleSearchViewModel = koinViewModel()
-    val newStorageString = stringResource(Res.string.new_storage)
-
+    val storageString = stringResource(Res.string.storage)
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
@@ -100,11 +106,14 @@ fun PeopleSearchScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Поиск снаряжения")
+            Spacer(modifier = Modifier.height(4.dp))
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.PaddingHorizontal),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedIconButton(
                     onClick = {
@@ -120,27 +129,16 @@ fun PeopleSearchScreen(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = "Поиск по местонахождению",
-                    style = TextStyle(
-                        fontSize = 18.sp,
-                    )
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
                 OutlinedTextField(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(bottom = 8.dp),
+                        .padding(bottom = 8.dp)
+                        .onPreviewKeyEvent { event ->
+                            if (event.key == Key.Enter && event.type == KeyEventType.KeyDown) {
+                                viewModel.obtainEvent(PeopleSearchScreenEvent.Search(state.value.enteredSearchText))
+                                true
+                            } else false
+                        },
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                     value = state.value.enteredSearchText,
                     onValueChange = {
@@ -154,11 +152,11 @@ fun PeopleSearchScreen(
                         unfocusedLabelColor = TkGrey
                     ),
                     label = {
-                        Text("Местонахождение")
+                        Text("название, место, и т.д.")
                     },
                     keyboardActions = KeyboardActions(
                         onSearch = {
-                            viewModel.obtainEvent(PeopleSearchScreenEvent.GetInfo(state.value.enteredSearchText))
+                            viewModel.obtainEvent(PeopleSearchScreenEvent.Search(state.value.enteredSearchText))
                         }
                     )
                 )
@@ -172,7 +170,7 @@ fun PeopleSearchScreen(
                     ),
                     enabled = state.value.enteredSearchText.isNotEmpty() && !state.value.isBusy(),
                     onClick = {
-                        viewModel.obtainEvent(PeopleSearchScreenEvent.GetInfo(state.value.enteredSearchText))
+                        viewModel.obtainEvent(PeopleSearchScreenEvent.Search(state.value.enteredSearchText))
                     }) {
                     if (state.value.isSearching) {
                         Spacer(modifier = Modifier.width(8.dp))
@@ -193,18 +191,31 @@ fun PeopleSearchScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            LazyColumn {
-                items(state.value.currentEquipList) { item ->
-                    EquipItemLayout(
-                        item = item,
-                        isLoading = state.value.isReturning,
-                        enabled = !state.value.isBusy(),
-                        onReturnButtonClick = {
-                            viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = newStorageString, event = "")))
-                        }
-                    )
+            if (state.value.currentEquipList.isNotEmpty()) {
+                LazyColumn {
+                    items(state.value.currentEquipList) { item ->
+                        EquipItemLayout(
+                            item = item,
+                            isLoading = state.value.isReturning,
+                            enabled = !state.value.isBusy(),
+                            onReturnButtonClick = {
+                                viewModel.obtainEvent(PeopleSearchScreenEvent.ReturnItem(item.copy(location = storageString, event = "")))
+                            },
+                            onItemClick = {
+                                navigator.push(Screens.Reception(startItem = item))
+                            }
+                        )
+                    }
+                }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxWidth().weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("введите запрос")
                 }
             }
+
         }
     }
 }
@@ -214,12 +225,13 @@ fun EquipItemLayout(
     item: EquipItem,
     isLoading: Boolean,
     enabled: Boolean,
-    onReturnButtonClick: () -> Unit
+    onReturnButtonClick: () -> Unit,
+    onItemClick: () -> Unit = {},
 ) {
-    val newStorageString = stringResource(Res.string.new_storage)
+    val storageString = stringResource(Res.string.storage)
 
     ElevatedCard(
-        modifier = Modifier.padding(horizontal = Dimens.PaddingHorizontal, vertical = Dimens.PaddingSmall).fillMaxWidth(),
+        modifier = Modifier.clickable { onItemClick() }.padding(horizontal = Dimens.PaddingHorizontal, vertical = Dimens.PaddingSmall).fillMaxWidth(),
         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
         colors = CardDefaults.cardColors(
             containerColor = TkLightBlue
@@ -247,8 +259,7 @@ fun EquipItemLayout(
                     item.location,
                     style = TextStyle(
                         color = when (item.location) {
-                            "склад" -> TkGreen
-                            "новый склад" -> TkDark
+                            storageString -> TkGreen
                             else -> TkYellow
                         },
                         fontSize = 14.sp,
@@ -260,13 +271,13 @@ fun EquipItemLayout(
             OutlinedIconButton(
                 modifier = Modifier.size(48.dp),
                 colors = IconButtonDefaults.iconButtonColors(
-                    containerColor = if (item.location == newStorageString) TkLightBlue else TkMain,
-                    contentColor = if (item.location == newStorageString) TkGreen else TkWhite,
+                    containerColor = if (item.location == storageString) TkLightBlue else TkMain,
+                    contentColor = if (item.location == storageString) TkGreen else TkWhite,
                     disabledContainerColor = TkMain.copy(alpha = 0.8f)
                 ),
                 enabled = enabled,
                 onClick = {
-                    if (item.location != newStorageString) {
+                    if (item.location != storageString) {
                         onReturnButtonClick.invoke()
                     }
                 }) {
@@ -279,7 +290,7 @@ fun EquipItemLayout(
                             strokeWidth = 2.dp
                         )
                     }
-                    item.location == newStorageString -> {
+                    item.location == storageString -> {
                         Icon(
                             modifier = Modifier.size(24.dp),
                             painter = painterResource(Res.drawable.ic_ok),

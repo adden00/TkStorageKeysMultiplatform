@@ -2,11 +2,14 @@ package com.adden00.tkstoragekeys.data
 
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.ExportFormat
+import com.adden00.tkstoragekeys.data.model.ItemHistoryEntry
 import com.adden00.tkstoragekeys.data.model.toEquipItem
-import com.adden00.tkstoragekeys.data.network.StorageApiService
+import com.adden00.tkstoragekeys.data.model.toItemHistoryEntry
+import com.adden00.tkstoragekeys.data.network.StorageApi
 
 class StorageRepository(
-    private val api: StorageApiService,
+    private val api: StorageApi,
     private val appSettings: AppSettings
 ) {
 
@@ -17,47 +20,27 @@ class StorageRepository(
         } else return response.equipItem.toEquipItem()
     }
 
-    suspend fun searchByName(query: String): List<EquipItem> {
-        val response = api.getItems(query.trim())
+    suspend fun search(query: String): List<EquipItem> {
+        val response = api.search(query.trim())
         return response.items.map { it.toEquipItem() }
     }
 
-    suspend fun updateItem(id: String, item: EquipItem): EquipItem {
+    suspend fun updateItem(id: String, item: EquipItem, historyAction: String = "ОБНОВЛЕНО"): EquipItem {
         val response = api.updateItem(
-            appSettings.keyHolderName,
-            id,
-            item.id,
-            item.category,
-            item.brand,
-            item.name,
-            item.color,
-            item.weigh,
-            item.quality?.value.orEmpty(),
-            item.location,
-            item.event,
-            item.info,
-            item.date,
+            keyholderName = appSettings.keyHolderName,
+            id = id,
+            item = item,
+            historyAction = historyAction
         )
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)
         } else return response.equipItem.toEquipItem()
     }
 
-    suspend fun addItem(id: String, item: EquipItem): EquipItem {
+    suspend fun addItem(item: EquipItem): EquipItem {
         val response = api.addItem(
             appSettings.keyHolderName,
-            id,
-            item.id,
-            item.category,
-            item.brand,
-            item.name,
-            item.color,
-            item.weigh,
-            item.quality?.value.orEmpty(),
-            item.location,
-            item.event,
-            item.info,
-            item.date
+            item
         )
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)
@@ -69,6 +52,18 @@ class StorageRepository(
         if (!response.success || response.id == null) {
             throw EquipNotFoundException(response.message)
         } else return response.id
+    }
+
+    suspend fun getItemHistory(id: String): List<ItemHistoryEntry> {
+        val response = api.getItemHistory(id)
+        return response.entries.map { it.toItemHistoryEntry() }
+    }
+
+    suspend fun exportItems(format: ExportFormat): ByteArray = api.exportItems(format)
+
+    suspend fun exportToSheets() {
+        val response = api.exportToSheets()
+        if (!response.success) throw EquipNotFoundException(response.message)
     }
 }
 

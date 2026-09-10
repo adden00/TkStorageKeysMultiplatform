@@ -1,6 +1,7 @@
 package com.adden00.tkstoragekeys.features.reception_screen.mvi
 
 import com.adden00.tkstoragekeys.data.model.EquipItem
+import com.adden00.tkstoragekeys.data.model.ExportFormat
 
 data class ReceptionScreenState(
     val isSearching: Boolean = false,
@@ -14,4 +15,6 @@ data class ReceptionScreenState(
     val enteredLocationText: String = "",
     val enteredEventText: String = "",
     val notFoundedId: String? = null,
+    val exportingFormat: ExportFormat? = null,
+    val isExportingToSheets: Boolean = false,
 )
