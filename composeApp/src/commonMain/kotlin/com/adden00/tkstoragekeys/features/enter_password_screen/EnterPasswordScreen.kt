@@ -90,7 +90,7 @@ fun EnterPasswordScreen(
                         passwordEditText.value = it
                     },
                     keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
+                        keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -105,9 +105,11 @@ fun EnterPasswordScreen(
 
                 Button(
                     onClick = {
-                        if (passwordEditText.value == KEY || passwordEditText.value == INVENTORY_KEY) {
+                        val key = passwordEditText.value.trim()
+                        if (key == KEY || key == INVENTORY_KEY || key == TEST_KEY) {
                             appSettings.keyHolderName = nameEditText.value
-                            appSettings.inventoryMode = passwordEditText.value == INVENTORY_KEY
+                            appSettings.inventoryMode = key == INVENTORY_KEY
+                            appSettings.isTestEnv = key == TEST_KEY
                             navigator.replace(Screens.Reception())
                         } else {
                             CoroutineScope(Dispatchers.Main).launch {
@@ -134,3 +136,6 @@ fun EnterPasswordScreen(
 
 private const val KEY = "925720"
 private const val INVENTORY_KEY = "999999"
+
+// обычный режим, но запросы уходят на локальный бэкенд (Constants.TEST_BASE_URL)
+private const val TEST_KEY = "testenv"
