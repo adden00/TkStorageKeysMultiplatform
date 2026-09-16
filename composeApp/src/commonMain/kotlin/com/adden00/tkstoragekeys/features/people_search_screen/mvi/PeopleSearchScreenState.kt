@@ -7,6 +7,8 @@ data class PeopleSearchScreenState(
     val isReturning: Boolean = false,
     val currentEquipList: List<EquipItem> = listOf(),
     val enteredSearchText: String = "",
+    /** Запрос, по которому получен текущий список: поле ввода очищается, а обновлять выдачу надо. */
+    val lastQuery: String = "",
 )
 
 fun PeopleSearchScreenState.isBusy() = isSearching || isReturning
