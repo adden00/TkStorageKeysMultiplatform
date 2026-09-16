@@ -35,9 +35,22 @@ object Screens {
         @Transient
         val startItem: EquipItem? = null,
     ) : Screen {
+        /**
+         * Стартовая вещь отдаётся экрану один раз на экземпляр. Флаг живёт в самом Screen:
+         * новое открытие вещи — новый экземпляр, возврат назад — тот же. Сохранённое состояние
+         * и вьюмодель для этого не годятся: в web экраны вещи делят и то и другое.
+         */
+        @Transient
+        private var startItemTaken = false
+
         @Composable
         override fun Content() {
-            ReceptionScreen(startItem = startItem)
+            ReceptionScreen(
+                startItem = startItem,
+                takeStartItem = {
+                    if (startItemTaken) null else startItem.also { startItemTaken = true }
+                }
+            )
         }
     }
 
