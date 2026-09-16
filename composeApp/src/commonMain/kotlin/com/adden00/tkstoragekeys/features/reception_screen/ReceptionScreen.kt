@@ -1,7 +1,6 @@
 package com.adden00.tkstoragekeys.features.reception_screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,11 +49,9 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -65,7 +62,6 @@ import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.ExportFormat
-import com.adden00.tkstoragekeys.data.model.Quality
 import com.adden00.tkstoragekeys.data.model.WAREHOUSE_ID
 import com.adden00.tkstoragekeys.data.model.isOnStorage
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
@@ -91,7 +87,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
-import tkstoragekeysmultiplatform.composeapp.generated.resources.edit
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_menu
@@ -499,110 +494,16 @@ fun ReceptionScreen(
             ) {
 
                 state.value.currentEquipItem?.let { equipItem ->
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimens.PaddingHorizontal),
-                        text = equipItem.id,
-                        style = TextStyle(fontSize = 22.sp)
-                    )
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimens.PaddingHorizontal), text = equipItem.name
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimens.PaddingHorizontal), text = "Производитель: ${equipItem.brand.ifEmpty { "неизвестно" }}"
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimens.PaddingHorizontal),
-                    ) {
-                        Text(
-                            text = "Состояние: ",
-                        )
-                        Text(
-                            text = equipItem.quality?.value.orEmpty(),
-                            style = TextStyle(
-                                color = when (state.value.currentEquipItem?.quality) {
-                                    Quality.BEST -> TkGreen
-                                    Quality.GOOD -> TkGrey
-                                    Quality.MEDIUM -> TkYellow
-                                    Quality.TO_WRITE_OFF -> TkRed
-                                    Quality.WRITE_OFF -> TkRed
-                                    null -> TkGreen
-                                },
-                                fontSize = 18.sp,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        )
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = Dimens.PaddingHorizontal),
-                    ) {
-                        Text(
-                            text = "Местоположение: ",
-                        )
-                        val personId = equipItem.locationUserId
-                        Text(
-                            modifier = if (!personId.isNullOrEmpty()) {
-                                Modifier.clickable { navigator.push(Screens.PersonDetails(personId)) }
-                            } else Modifier,
-                            text = equipItem.location,
-                            style = TextStyle(
-                                color = if (equipItem.isOnStorage()) TkGreen else TkYellow,
-                                fontSize = 20.sp,
-                                textDecoration = TextDecoration.Underline
-                            )
-                        )
-                    }
-
-                    if (equipItem.event.isNotEmpty()) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Dimens.PaddingHorizontal), text = "мероприятие: ${equipItem.event}"
-                        )
-                    }
-
-                    if (equipItem.info.isNotEmpty()) {
-                        Text(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Dimens.PaddingHorizontal),
-                            style = TextStyle(fontStyle = FontStyle.Italic),
-                            text = "примечания: ${equipItem.info}"
-                        )
-                    }
-
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                // locationUserId = null: место не трогали, сервер сохранит привязку сам
-                                val target = equipItem.copy(locationUserId = null)
-                                navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
-                            }
-                            .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
-                        style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
-                        text = stringResource(Res.string.edit)
-                    )
-
-                    Text(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navigator.push(Screens.ItemHistory(itemId = equipItem.id))
-                            }
-                            .padding(horizontal = Dimens.PaddingHorizontal, vertical = 4.dp),
-                        style = TextStyle(fontSize = 16.sp, fontStyle = FontStyle.Italic, color = TkMain),
-                        text = "История"
+                    Spacer(modifier = Modifier.height(4.dp))
+                    EquipItemCard(
+                        item = equipItem,
+                        onPersonClick = { userId -> navigator.push(Screens.PersonDetails(userId)) },
+                        onEditClick = {
+                            // locationUserId = null: место не трогали, сервер сохранит привязку сам
+                            val target = equipItem.copy(locationUserId = null)
+                            navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
+                        },
+                        onHistoryClick = { navigator.push(Screens.ItemHistory(itemId = equipItem.id)) }
                     )
                 }
 

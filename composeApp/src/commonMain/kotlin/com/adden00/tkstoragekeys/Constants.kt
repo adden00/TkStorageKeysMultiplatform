@@ -11,5 +11,5 @@ object Constants {
     // localhost вместо IP Мака: сеть изолирует Wi-Fi-клиентов от Мака на кабеле, поэтому
     // Android (и телефон по USB, и эмулятор) ходит через `adb reverse tcp:8080 tcp:8080`;
     // desktop и iOS-симулятор видят localhost Мака напрямую
-    const val TEST_BASE_URL = "http://localhost:8080/"
+    const val TEST_BASE_URL = "http://192.168.1.66:8080/"
 }
