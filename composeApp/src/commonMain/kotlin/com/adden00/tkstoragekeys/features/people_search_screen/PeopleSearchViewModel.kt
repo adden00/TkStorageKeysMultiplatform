@@ -7,6 +7,7 @@ import com.adden00.tkstoragekeys.data.StorageRepository
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEffect
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenEvent
 import com.adden00.tkstoragekeys.features.people_search_screen.mvi.PeopleSearchScreenState
+import com.adden00.tkstoragekeys.features.people_search_screen.mvi.isBusy
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -36,7 +37,7 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
                 viewModelScope.launch {
                     try {
                         val items = storageRepository.search(viewEvent.query)
-                        _viewState.update { it.copy(currentEquipList = items) }
+                        _viewState.update { it.copy(currentEquipList = items, lastQuery = viewEvent.query) }
                     } catch (e: EquipNotFoundException) {
                         if (!e.message.isNullOrEmpty()) {
                             _viewEffect.send(PeopleSearchScreenEffect.ShowToast(e.message))
@@ -46,6 +47,22 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
                         _viewState.update { it.copy(currentEquipList = listOf(), enteredSearchText = "") }
                     } catch (e: Exception) {
                         _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
+                    } finally {
+                        _viewState.update { it.copy(isSearching = false) }
+                    }
+                }
+            }
+
+            is PeopleSearchScreenEvent.Refresh -> {
+                val state = viewState.value
+                if (state.lastQuery.isBlank() || state.isBusy()) return
+                _viewState.update { it.copy(isSearching = true) }
+                viewModelScope.launch {
+                    try {
+                        val items = storageRepository.search(state.lastQuery)
+                        _viewState.update { it.copy(currentEquipList = items) }
+                    } catch (_: Exception) {
+                        // фоновое обновление: при ошибке оставляем прежний список, пользователь его и видел
                     } finally {
                         _viewState.update { it.copy(isSearching = false) }
                     }

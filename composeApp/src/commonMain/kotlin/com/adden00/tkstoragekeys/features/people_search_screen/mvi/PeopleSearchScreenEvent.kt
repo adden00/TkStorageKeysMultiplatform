@@ -6,4 +6,7 @@ sealed class PeopleSearchScreenEvent {
     data class Search(val query: String) : PeopleSearchScreenEvent()
     data class ReturnItem(val item: EquipItem) : PeopleSearchScreenEvent()
     data class OnSearchTextChanged(val text: String) : PeopleSearchScreenEvent()
+
+    /** Перезапросить последнюю выдачу, например после возврата с экрана вещи. */
+    data object Refresh : PeopleSearchScreenEvent()
 }

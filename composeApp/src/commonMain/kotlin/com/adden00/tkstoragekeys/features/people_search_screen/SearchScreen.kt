@@ -197,6 +197,12 @@ private fun ColumnScope.EquipSearchContent(
     val storageString = stringResource(Res.string.storage)
     val state = viewModel.viewState.collectAsState()
 
+    // Voyager пересоздаёт контент экрана при возврате назад: если на экране вещи её выдали
+    // или вернули, выдача здесь устарела — перезапрашиваем последний поиск
+    LaunchedEffect("refresh on return") {
+        viewModel.obtainEvent(PeopleSearchScreenEvent.Refresh)
+    }
+
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
             when (effect) {
