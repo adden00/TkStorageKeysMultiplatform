@@ -17,11 +17,13 @@ data class EquipItem(
     val event: String = "",
     val info: String = "",
     val date: String = "",
+    val locationUserId: String? = null,
 )
 
+// сервер отдаёт канонический "Склад", а старые записи могут быть "склад" — сравниваем без регистра
 @Composable
 fun EquipItem.isOnStorage() =
-    location == stringResource(Res.string.storage)
+    locationUserId == WAREHOUSE_ID || location.trim().equals(stringResource(Res.string.storage), ignoreCase = true)
 
 fun EquipItem.isWritingOff() =
     quality == Quality.WRITE_OFF || quality == Quality.TO_WRITE_OFF

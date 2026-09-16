@@ -91,11 +91,12 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                         _viewState.update { it.copy(currentEquipItem = newItem, enteredSearchText = "", error = "") }
                     } catch (e: EquipNotFoundException) {
                         if (!e.message.isNullOrEmpty()) {
+                            // сервер объяснил отказ (например, "Пользователь не найден") — вещь остаётся на экране
                             _viewEffect.send(ReceptionScreenEffect.ShowToast(e.message))
                         } else {
                             _viewEffect.send(ReceptionScreenEffect.ShowToast("${viewEvent.id} не найдено!"))
+                            _viewState.update { it.copy(currentEquipItem = null, error = "", enteredSearchText = "") }
                         }
-                        _viewState.update { it.copy(currentEquipItem = null, error = "", enteredSearchText = "") }
                     } catch (e: Exception) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
@@ -114,8 +115,8 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                 _viewState.update { it.copy(enteredEventText = viewEvent.text) }
             }
 
-            is ReceptionScreenEvent.OnLocationTextChanged -> {
-                _viewState.update { it.copy(enteredLocationText = viewEvent.text) }
+            is ReceptionScreenEvent.OnLocationPicked -> {
+                _viewState.update { it.copy(selectedLocation = viewEvent.pick) }
             }
 
             is ReceptionScreenEvent.ShowUpdatedItem -> {
@@ -158,6 +159,21 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
                     } finally {
                         _viewState.update { it.copy(isExportingToSheets = false) }
+                    }
+                }
+            }
+
+            is ReceptionScreenEvent.ImportUsers -> {
+                if (_viewState.value.isImportingUsers) return
+                _viewState.update { it.copy(isImportingUsers = true) }
+                viewModelScope.launch {
+                    try {
+                        val result = storageRepository.importUsers()
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast(result))
+                    } catch (e: Exception) {
+                        _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка обновления справочника: ${e.message ?: ""}"))
+                    } finally {
+                        _viewState.update { it.copy(isImportingUsers = false) }
                     }
                 }
             }

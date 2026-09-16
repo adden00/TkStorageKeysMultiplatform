@@ -6,6 +6,7 @@
     <application
         android:icon="@mipmap/ic_launcher"
         android:name=".TkStorageApp"
+        android:usesCleartextTraffic="true"
         android:label="Склад"
         android:theme="@style/mainStyle">
         <activity

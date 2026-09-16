@@ -7,8 +7,11 @@ import com.adden00.tkstoragekeys.data.network.BackendApiService
 import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
+import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupViewModel
 import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
+import com.adden00.tkstoragekeys.features.person_details_screen.PersonDetailsViewModel
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionViewModel
+import com.adden00.tkstoragekeys.features.users_search.UsersSearchViewModel
 import com.russhwolf.settings.Settings
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
@@ -51,7 +54,11 @@ private fun dataModule() = module {
     }
 
     factory<StorageApi> {
-        BackendApiService(api = get(), baseUrl = SPRING_API_URL)
+        val appSettings = get<AppSettings>()
+        BackendApiService(
+            api = get(),
+            baseUrlProvider = { if (appSettings.isTestEnv) Constants.TEST_BASE_URL else SPRING_API_URL }
+        )
     }
 
     factory<AppSettings> {
@@ -71,6 +78,9 @@ private fun dataModule() = module {
 
 fun viewModelModule() = module {
     viewModel {
+        LocationCleanupViewModel()
+    }
+    viewModel {
         ReceptionViewModel()
     }
 
@@ -84,6 +94,14 @@ fun viewModelModule() = module {
 
     viewModel {
         ItemHistoryViewModel()
+    }
+
+    viewModel {
+        UsersSearchViewModel()
+    }
+
+    viewModel {
+        PersonDetailsViewModel()
     }
 }
 

@@ -47,12 +47,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
-import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.Quality
 import com.adden00.tkstoragekeys.data.model.extractQuality
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEffect
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEvent
+import com.adden00.tkstoragekeys.features.users_search.LocationPickerField
+import com.adden00.tkstoragekeys.features.users_search.PersonPickerSheet
 import com.adden00.tkstoragekeys.navigation.VoyagerResultExtension
 import com.adden00.tkstoragekeys.navigation.rememberNavigationResultExtension
 import com.adden00.tkstoragekeys.theme.Dimens
@@ -60,7 +61,6 @@ import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
@@ -72,13 +72,29 @@ fun NewEquipScreen(
     startItemFilled: EquipItem,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
     navigator: Navigator = LocalNavigator.currentOrThrow,
-    appSettings: AppSettings = koinInject(),
 ) {
 
     val viewModel: NewEquipViewModel = koinViewModel()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val state = viewModel.viewState.collectAsState()
+
+    val showPersonPicker = remember { mutableStateOf(false) }
+
+    // без перехода в карточку человека: при возврате экран перезаполнился бы стартовыми данными
+    if (showPersonPicker.value) {
+        PersonPickerSheet(
+            onDismiss = { showPersonPicker.value = false },
+            onPicked = { pick ->
+                showPersonPicker.value = false
+                viewModel.obtainEvent(
+                    NewEquipScreenEvent.OnEnteredItemChange(
+                        state.value.enteredItem.copy(location = pick.name, locationUserId = pick.userId)
+                    )
+                )
+            }
+        )
+    }
 
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
@@ -386,25 +402,13 @@ fun NewEquipScreen(
             }
 
             Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(
+            LocationPickerField(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.PaddingHorizontal),
                 value = state.value.enteredItem.location,
-                onValueChange = {
-                    viewModel.obtainEvent(NewEquipScreenEvent.OnEnteredItemChange(state.value.enteredItem.copy(location = it)))
-                },
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next
-                ),
-                shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedLabelColor = TkGrey
-                ),
-                label = {
-                    Text("Местоположение")
-                }
+                label = "Местоположение",
+                onClick = { showPersonPicker.value = true }
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -476,11 +480,7 @@ fun NewEquipScreen(
                 enabled = state.value.enteredItem.id.isNotEmpty() && state.value.enteredItem.name.isNotEmpty() && !state.value.isAdding
             ) {
                 Text(
-                    text = when {
-                        state.value.updatingItemId == "" -> "Добавить"
-                        appSettings.inventoryMode == true -> "инвентаризовать"
-                        else -> "изменить"
-                    }
+                    text = if (state.value.updatingItemId == "") "Добавить" else "изменить"
                 )
                 if (state.value.isAdding) {
                     Spacer(modifier = Modifier.width(8.dp))

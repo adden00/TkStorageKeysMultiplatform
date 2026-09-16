@@ -15,7 +15,9 @@ import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
 import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryScreen
+import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupScreen
 import com.adden00.tkstoragekeys.features.people_search_screen.SearchScreen
+import com.adden00.tkstoragekeys.features.person_details_screen.PersonDetailsScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
 import kotlin.jvm.Transient
@@ -33,9 +35,22 @@ object Screens {
         @Transient
         val startItem: EquipItem? = null,
     ) : Screen {
+        /**
+         * Стартовая вещь отдаётся экрану один раз на экземпляр. Флаг живёт в самом Screen:
+         * новое открытие вещи — новый экземпляр, возврат назад — тот же. Сохранённое состояние
+         * и вьюмодель для этого не годятся: в web экраны вещи делят и то и другое.
+         */
+        @Transient
+        private var startItemTaken = false
+
         @Composable
         override fun Content() {
-            ReceptionScreen(startItem = startItem)
+            ReceptionScreen(
+                startItem = startItem,
+                takeStartItem = {
+                    if (startItemTaken) null else startItem.also { startItemTaken = true }
+                }
+            )
         }
     }
 
@@ -57,6 +72,13 @@ object Screens {
         }
     }
 
+    object LocationCleanup : Screen {
+        @Composable
+        override fun Content() {
+            LocationCleanupScreen()
+        }
+    }
+
     object Tutorial : Screen {
         @Composable
         override fun Content() {
@@ -68,6 +90,13 @@ object Screens {
         @Composable
         override fun Content() {
             ItemHistoryScreen(itemId = itemId)
+        }
+    }
+
+    data class PersonDetails(val userId: String) : Screen {
+        @Composable
+        override fun Content() {
+            PersonDetailsScreen(userId = userId)
         }
     }
 }

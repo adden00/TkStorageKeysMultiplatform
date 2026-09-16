@@ -116,8 +116,8 @@ android {
         targetSdk = 35
 
         applicationId = "com.adden00.tkstoragekeys"
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = 5
+        versionName = "2.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -137,7 +137,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "TkStorageKeysMultiplatform"
-            packageVersion = "1.0.0"
+            packageVersion = "2.0.0"
 
             linux {
                 iconFile.set(project.file("desktopAppIcons/LinuxIcon.png"))
