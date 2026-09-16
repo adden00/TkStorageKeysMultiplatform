@@ -47,7 +47,6 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
-import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.Quality
 import com.adden00.tkstoragekeys.data.model.extractQuality
@@ -62,7 +61,6 @@ import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
@@ -74,7 +72,6 @@ fun NewEquipScreen(
     startItemFilled: EquipItem,
     navigatorExtension: VoyagerResultExtension = rememberNavigationResultExtension(),
     navigator: Navigator = LocalNavigator.currentOrThrow,
-    appSettings: AppSettings = koinInject(),
 ) {
 
     val viewModel: NewEquipViewModel = koinViewModel()
@@ -483,11 +480,7 @@ fun NewEquipScreen(
                 enabled = state.value.enteredItem.id.isNotEmpty() && state.value.enteredItem.name.isNotEmpty() && !state.value.isAdding
             ) {
                 Text(
-                    text = when {
-                        state.value.updatingItemId == "" -> "Добавить"
-                        appSettings.inventoryMode == true -> "инвентаризовать"
-                        else -> "изменить"
-                    }
+                    text = if (state.value.updatingItemId == "") "Добавить" else "изменить"
                 )
                 if (state.value.isAdding) {
                     Spacer(modifier = Modifier.width(8.dp))

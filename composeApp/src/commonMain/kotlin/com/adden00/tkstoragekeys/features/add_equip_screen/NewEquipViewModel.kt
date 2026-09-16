@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adden00.tkstoragekeys.data.EquipNotFoundException
 import com.adden00.tkstoragekeys.data.StorageRepository
-import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEffect
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenEvent
 import com.adden00.tkstoragekeys.features.add_equip_screen.mvi.NewEquipScreenState
@@ -23,7 +22,6 @@ import org.koin.core.component.get
 class NewEquipViewModel : ViewModel(), KoinComponent {
 
     private val storageRepository: StorageRepository = get()
-    private val appSettings: AppSettings = get()
 
     private val _viewState = MutableStateFlow(NewEquipScreenState())
     val viewState: StateFlow<NewEquipScreenState> get() = _viewState.asStateFlow()
@@ -105,12 +103,8 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                         val equipItem =
                             storageRepository.updateItem(
                                 id = id,
-                                item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate()),
-                                historyAction = if (appSettings.inventoryMode == true) {
-                                    "ИНВЕНТАРИЗОВАНО"
-                                } else {
-                                    "ОБНОВЛЕНО"
-                                })
+                                item = viewState.value.enteredItem.copy(date = DateUtils.getCurrentDate())
+                            )
                         if (equipItem.id.isNotEmpty()) {
                             _viewEffect.send(NewEquipScreenEffect.NavigateBack(equipItem))
                         } else {

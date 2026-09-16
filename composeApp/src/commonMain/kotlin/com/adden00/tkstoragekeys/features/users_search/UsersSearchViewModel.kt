@@ -67,9 +67,14 @@ class UsersSearchViewModel : ViewModel(), KoinComponent {
         }
     }
 
-    fun reset() {
+    /**
+     * Открыть поиск сразу с запросом. Нужен разбору местоположений: там текст
+     * уже написан на экране, и заставлять перенабирать его 47 раз незачем.
+     */
+    fun resetWith(query: String) {
         searchJob?.cancel()
         _viewState.value = UsersSearchState()
+        if (query.isNotBlank()) onQueryChange(query)
     }
 
     private companion object {

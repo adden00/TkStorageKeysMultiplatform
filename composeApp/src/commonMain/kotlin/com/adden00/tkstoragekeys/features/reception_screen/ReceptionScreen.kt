@@ -273,7 +273,6 @@ fun ReceptionScreen(
                     OutlinedIconButton(
                         onClick = {
                             appSettings.keyHolderName = ""
-                            appSettings.inventoryMode = false
                             appSettings.isTestEnv = false
                             navigator.replace(Screens.EnterPassword)
                         }
@@ -321,6 +320,13 @@ fun ReceptionScreen(
                                 onClick = {
                                     menuExpanded.value = false
                                     navigator.push(Screens.Tutorial)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Разбор местоположений") },
+                                onClick = {
+                                    menuExpanded.value = false
+                                    navigator.push(Screens.LocationCleanup)
                                 }
                             )
                             DropdownMenuItem(
@@ -580,9 +586,7 @@ fun ReceptionScreen(
                             .fillMaxWidth()
                             .clickable {
                                 // locationUserId = null: место не трогали, сервер сохранит привязку сам
-                                val target = if (appSettings.inventoryMode == true)
-                                    equipItem.copy(location = storageString, event = "", locationUserId = WAREHOUSE_ID)
-                                else equipItem.copy(locationUserId = null)
+                                val target = equipItem.copy(locationUserId = null)
                                 navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                             }
                             .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
@@ -605,48 +609,7 @@ fun ReceptionScreen(
                 Spacer(modifier = Modifier.weight(1f))
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (appSettings.inventoryMode == true) {
-                    Button(
-                        onClick = {
-                            state.value.currentEquipItem?.let { equipItem ->
-                                viewModel.obtainEvent(
-                                    ReceptionScreenEvent.UpdateInfo(
-                                        equipItem.id,
-                                        equipItem.copy(
-                                            location = storageString,
-                                            locationUserId = WAREHOUSE_ID,
-                                            event = "",
-                                            date = DateUtils.getCurrentDate()
-                                        ),
-                                        updateType = UpdateType.MOVING_NO_NEW_STORAGE
-                                    )
-                                )
-                            }
-                        },
-                        shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = TkMain,
-                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                        ),
-                        enabled = state.value.currentEquipItem?.let {
-                            !state.value.isBusy() && !it.isOnStorage()
-                        } ?: false
-                    ) {
-                        Text(
-                            text = "Инвентаризовать"
-                        )
-                        if (state.value.isMovingToNewStorage) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(18.dp),
-                                color = TkWhite,
-                                strokeWidth = 2.dp
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                } else if (state.value.currentEquipItem != null) {
+                if (state.value.currentEquipItem != null) {
                     Text(
                         "Выдача снаряжения",
                         style = TextStyle(

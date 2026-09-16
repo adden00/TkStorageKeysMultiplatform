@@ -37,6 +37,9 @@ interface StorageApi {
 
     suspend fun getUserItems(id: String): EquipsResponse
 
+    /** Предметы, местоположение которых осталось свободным текстом. */
+    suspend fun getUnboundItems(): EquipsResponse
+
     suspend fun importUsers(): UsersImportResponse
 
 }
