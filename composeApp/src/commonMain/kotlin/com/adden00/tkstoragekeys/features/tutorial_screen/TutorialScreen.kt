@@ -40,7 +40,6 @@ import tkstoragekeysmultiplatform.composeapp.generated.resources.tutorial_5
 import tkstoragekeysmultiplatform.composeapp.generated.resources.tutorial_6
 import tkstoragekeysmultiplatform.composeapp.generated.resources.tutorial_app_1
 import tkstoragekeysmultiplatform.composeapp.generated.resources.tutorial_app_2
-import tkstoragekeysmultiplatform.composeapp.generated.resources.tutorial_common
 import tkstoragekeysmultiplatform.composeapp.generated.resources.tutorial_rules
 
 @Composable
@@ -74,8 +73,6 @@ fun TutorialScreen(
                     )
                 }
             }
-            Text(text = stringResource(Res.string.tutorial_common))
-            Spacer(modifier = Modifier.height(32.dp))
             Text(text = stringResource(Res.string.tutorial_app_1))
             Row {
                 Image(modifier = Modifier.weight(1f), painter = painterResource(Res.drawable.tutorial_1), contentDescription = "t1")
