@@ -43,6 +43,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -101,6 +102,7 @@ fun ReceptionScreen(
     resultItem: State<EquipItem?> = navigatorExtension.getResult<EquipItem>("KEY"),
     appSettings: AppSettings = koinInject(),
     startItem: EquipItem? = null,
+    takeStartItem: () -> EquipItem? = { startItem },
 ) {
     val viewModel: ReceptionViewModel = koinViewModel()
 
@@ -147,12 +149,19 @@ fun ReceptionScreen(
         }
     }
 
+    // Эффект перезапускается при каждом возврате на экран. startItem — снимок вещи на момент
+    // открытия, поэтому берём его только при первом показе: иначе он перетёр бы и результат
+    // редактирования, и выдачу, сделанную на этом экране до ухода в историю.
     LaunchedEffect("initial value") {
-        resultItem.value?.let { item ->
-            viewModel.obtainEvent(ReceptionScreenEvent.SetItem(item))
-            viewModel.obtainEvent(ReceptionScreenEvent.ShowUpdatedItem(item.id))
+        val firstStartItem = takeStartItem()
+        val updatedItem = resultItem.value
+        when {
+            updatedItem != null -> {
+                viewModel.obtainEvent(ReceptionScreenEvent.SetItem(updatedItem))
+                viewModel.obtainEvent(ReceptionScreenEvent.ShowUpdatedItem(updatedItem.id))
+            }
+            firstStartItem != null -> viewModel.obtainEvent(ReceptionScreenEvent.SetItem(firstStartItem))
         }
-        startItem?.let { viewModel.obtainEvent(ReceptionScreenEvent.SetItem(it)) }
     }
 
     Scaffold(
@@ -435,7 +444,7 @@ fun ReceptionScreen(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     IconButton(
-                        modifier = Modifier.size(48.dp),
+                        modifier = Modifier.size(48.dp).keepFocusOnClick(),
                         colors = IconButtonDefaults.iconButtonColors(
                             containerColor = TkMain,
                             contentColor = TkWhite,
@@ -551,6 +560,7 @@ fun ReceptionScreen(
 
                     Row {
                         Button(
+                            modifier = Modifier.keepFocusOnClick(),
                             onClick = {
                                 state.value.currentEquipItem?.let { equipItem ->
                                     viewModel.obtainEvent(
@@ -590,6 +600,7 @@ fun ReceptionScreen(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Button(
+                            modifier = Modifier.keepFocusOnClick(),
                             onClick = {
                                 val pick = state.value.selectedLocation ?: return@Button
                                 state.value.currentEquipItem?.let { equipItem ->
@@ -638,6 +649,13 @@ fun ReceptionScreen(
         }
     }
 }
+
+/**
+ * В web и на десктопе клик мышью переносит фокус на кнопку, а пока идёт запрос кнопка
+ * неактивна и роняет его совсем — курсор уходит из поля номера. На Android касание фокус
+ * не забирает. Кнопка без фокуса оставляет его там, где он был: можно сразу вбивать следующий номер.
+ */
+private fun Modifier.keepFocusOnClick(): Modifier = focusProperties { canFocus = false }
 
 private fun ReceptionScreenState.isBusy(): Boolean =
     isMovingToPerson || isReturning || isMovingToNewStorage || isSearching
