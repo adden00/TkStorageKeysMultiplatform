@@ -90,6 +90,9 @@ class BackendApiService(
     override suspend fun getUser(id: String): UserResponse =
         api.get("$base/users/$id").body()
 
+    override suspend fun getUnboundItems(): EquipsResponse =
+        api.get("$base/items/unbound").body()
+
     override suspend fun getUserItems(id: String): EquipsResponse =
         api.get("$base/users/$id/items").body()
 

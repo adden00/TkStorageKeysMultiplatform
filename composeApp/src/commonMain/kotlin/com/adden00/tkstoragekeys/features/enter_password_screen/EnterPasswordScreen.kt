@@ -52,7 +52,8 @@ fun EnterPasswordScreen(
     val passwordEditText = remember { mutableStateOf("") }
 
     LaunchedEffect("checkName") {
-        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB && appSettings.inventoryMode == false) {
+        appSettings.dropLegacyInventorySession()
+        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
             navigator.replace(Screens.Reception())
         }
     }
@@ -106,9 +107,8 @@ fun EnterPasswordScreen(
                 Button(
                     onClick = {
                         val key = passwordEditText.value.trim()
-                        if (key == KEY || key == INVENTORY_KEY || key == TEST_KEY) {
+                        if (key == KEY || key == TEST_KEY) {
                             appSettings.keyHolderName = nameEditText.value
-                            appSettings.inventoryMode = key == INVENTORY_KEY
                             appSettings.isTestEnv = key == TEST_KEY
                             navigator.replace(Screens.Reception())
                         } else {
@@ -135,7 +135,6 @@ fun EnterPasswordScreen(
 }
 
 private const val KEY = "925720"
-private const val INVENTORY_KEY = "999999"
 
 // обычный режим, но запросы уходят на локальный бэкенд (Constants.TEST_BASE_URL)
 private const val TEST_KEY = "testenv"

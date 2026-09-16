@@ -7,6 +7,7 @@ import com.adden00.tkstoragekeys.data.network.BackendApiService
 import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
+import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupViewModel
 import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
 import com.adden00.tkstoragekeys.features.person_details_screen.PersonDetailsViewModel
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionViewModel
@@ -76,6 +77,9 @@ private fun dataModule() = module {
 }
 
 fun viewModelModule() = module {
+    viewModel {
+        LocationCleanupViewModel()
+    }
     viewModel {
         ReceptionViewModel()
     }

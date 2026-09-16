@@ -40,7 +40,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.theme.Dimens
@@ -105,10 +107,19 @@ fun UsersSearchField(
     modifier: Modifier = Modifier,
 ) {
     val focusManager = LocalFocusManager.current
+    // курсор держим сами: подставленный снаружи текст открывается с курсором в конце,
+    // чтобы лишние слова можно было сразу стереть
+    var field by remember { mutableStateOf(TextFieldValue(query, TextRange(query.length))) }
+    LaunchedEffect(query) {
+        if (field.text != query) field = TextFieldValue(query, TextRange(query.length))
+    }
     OutlinedTextField(
         modifier = modifier,
-        value = query,
-        onValueChange = onQueryChange,
+        value = field,
+        onValueChange = {
+            field = it
+            onQueryChange(it.text)
+        },
         singleLine = true,
         shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
         colors = OutlinedTextFieldDefaults.colors(unfocusedLabelColor = TkGrey),
@@ -133,6 +144,7 @@ fun PersonPickerSheet(
     onDismiss: () -> Unit,
     onPicked: (LocationPick) -> Unit,
     onOpenDetails: ((userId: String) -> Unit)? = null,
+    initialQuery: String = "",
 ) {
     val viewModel: UsersSearchViewModel = koinViewModel(key = "person_picker")
     val state = viewModel.viewState.collectAsState()
@@ -141,9 +153,9 @@ fun PersonPickerSheet(
     val focusRequester = remember { FocusRequester() }
     var manualText by remember { mutableStateOf<String?>(null) }
 
-    // шторка каждый раз открывается с чистым поиском
-    LaunchedEffect(Unit) {
-        viewModel.reset()
+    // шторка каждый раз открывается заново: либо чистой, либо с подставленным запросом
+    LaunchedEffect(initialQuery) {
+        viewModel.resetWith(initialQuery)
         runCatching { focusRequester.requestFocus() }
     }
 

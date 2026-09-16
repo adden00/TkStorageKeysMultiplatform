@@ -93,6 +93,12 @@ class StorageRepository(
         return response.items.map { it.toEquipItem() }
     }
 
+    suspend fun getUnboundItems(): List<EquipItem> {
+        val response = api.getUnboundItems()
+        if (!response.success) throw EquipNotFoundException(response.message)
+        return response.items.map { it.toEquipItem() }
+    }
+
     /** @return текст для пользователя об итогах импорта */
     suspend fun importUsers(): String {
         val response = api.importUsers()
