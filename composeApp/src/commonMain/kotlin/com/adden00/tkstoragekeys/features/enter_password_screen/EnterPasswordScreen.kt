@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -23,6 +24,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -51,6 +61,23 @@ fun EnterPasswordScreen(
     val nameEditText = remember { mutableStateOf("") }
     val passwordEditText = remember { mutableStateOf("") }
 
+    val focusManager = LocalFocusManager.current
+    val passwordFocus = remember { FocusRequester() }
+
+    fun tryLogin() {
+        if (nameEditText.value.isEmpty()) return
+        val key = passwordEditText.value.trim()
+        if (key == KEY || key == TEST_KEY) {
+            appSettings.keyHolderName = nameEditText.value
+            appSettings.isTestEnv = key == TEST_KEY
+            navigator.replace(Screens.Reception())
+        } else {
+            CoroutineScope(Dispatchers.Main).launch {
+                snackbarHostState.showSnackbar("Ключ неверный")
+            }
+        }
+    }
+
     LaunchedEffect("checkName") {
         appSettings.dropLegacyInventorySession()
         if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
@@ -71,11 +98,16 @@ fun EnterPasswordScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 OutlinedTextField(
+                    // Enter с физической клавиатуры (web, десктоп) переводит к ключу, а не переносит строку
+                    modifier = Modifier.onEnterKey { passwordFocus.requestFocus() },
+                    singleLine = true,
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                     value = nameEditText.value,
                     onValueChange = {
                         nameEditText.value = it
                     },
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedLabelColor = TkGrey
                     ),
@@ -85,6 +117,10 @@ fun EnterPasswordScreen(
                 )
 
                 OutlinedTextField(
+                    modifier = Modifier
+                        .focusRequester(passwordFocus)
+                        .onEnterKey(::tryLogin),
+                    singleLine = true,
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                     value = passwordEditText.value,
                     onValueChange = {
@@ -94,6 +130,7 @@ fun EnterPasswordScreen(
                         keyboardType = KeyboardType.Password,
                         imeAction = ImeAction.Done
                     ),
+                    keyboardActions = KeyboardActions(onDone = { tryLogin() }),
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedLabelColor = TkGrey
                     ),
@@ -105,18 +142,7 @@ fun EnterPasswordScreen(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Button(
-                    onClick = {
-                        val key = passwordEditText.value.trim()
-                        if (key == KEY || key == TEST_KEY) {
-                            appSettings.keyHolderName = nameEditText.value
-                            appSettings.isTestEnv = key == TEST_KEY
-                            navigator.replace(Screens.Reception())
-                        } else {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                snackbarHostState.showSnackbar("Ключ неверный")
-                            }
-                        }
-                    },
+                    onClick = ::tryLogin,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = TkMain,
                         disabledContainerColor = TkMain.copy(alpha = 0.8f)
@@ -132,6 +158,13 @@ fun EnterPasswordScreen(
             }
         }
     }
+}
+
+/** Enter и Enter на цифровом блоке: срабатывает на нажатие, событие дальше в поле не идёт. */
+private fun Modifier.onEnterKey(action: () -> Unit): Modifier = onPreviewKeyEvent { event ->
+    val isEnter = event.key == Key.Enter || event.key == Key.NumPadEnter
+    if (isEnter && event.type == KeyEventType.KeyDown) action()
+    isEnter
 }
 
 private const val KEY = "925720"
