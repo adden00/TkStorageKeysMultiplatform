@@ -1,8 +1,9 @@
 package com.adden00.tkstoragekeys.utils
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.number
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
 
 object DateUtils {
     fun getCurrentDate(): String {
@@ -16,8 +17,8 @@ object DateUtils {
 
     fun getCurrentDateTimeForFileName(): String {
         val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
-        val day = now.date.dayOfMonth.toString().padStart(2, '0')
-        val month = now.date.monthNumber.toString().padStart(2, '0')
+        val day = now.date.day.toString().padStart(2, '0')
+        val month = now.date.month.number.toString().padStart(2, '0')
         val year = (now.date.year % 100).toString().padStart(2, '0')
         val hour = now.hour.toString().padStart(2, '0')
         val minute = now.minute.toString().padStart(2, '0')

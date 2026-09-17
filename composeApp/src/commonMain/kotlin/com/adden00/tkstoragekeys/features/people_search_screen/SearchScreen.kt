@@ -28,12 +28,11 @@ import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SecondaryTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -132,14 +131,14 @@ fun SearchScreen(
 
                 Spacer(modifier = Modifier.width(8.dp))
 
-                TabRow(
+                SecondaryTabRow(
                     modifier = Modifier.weight(1f),
                     selectedTabIndex = selectedTab,
                     containerColor = Color.Transparent,
                     contentColor = TkMain,
-                    indicator = { tabPositions ->
+                    indicator = {
                         TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTab]),
+                            modifier = Modifier.tabIndicatorOffset(selectedTab, matchContentSize = false),
                             color = TkMain
                         )
                     }
