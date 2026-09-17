@@ -107,13 +107,12 @@ fun rememberNavigationResultExtension(): VoyagerResultExtension {
 
     return remember {
         NavigatorLifecycleStore.get(navigator) {
-            VoyagerResultExtension(navigator)
+            VoyagerResultExtension()
         }
     }
 }
 
 class VoyagerResultExtension(
-    private val navigator: Navigator
 ) : NavigatorDisposable {
     private val results = mutableStateMapOf<String, Any?>()
 
@@ -125,18 +124,9 @@ class VoyagerResultExtension(
         results[screenKey] = result
     }
 
-    fun popWithResult(result: Any? = null) {
-        val currentScreen = navigator.lastItem
-        results[currentScreen.key] = result
-        navigator.pop()
-    }
-
-    fun clearResults() {
-        results.clear()
-    }
-
     @Composable
     fun <T> getResult(screenKey: String): State<T?> {
+        @Suppress("UNCHECKED_CAST")
         val result = results[screenKey] as? T
         val resultState = remember(screenKey, result) {
             derivedStateOf {
