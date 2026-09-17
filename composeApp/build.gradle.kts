@@ -1,4 +1,3 @@
-import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -13,6 +12,19 @@ plugins {
 }
 
 kotlin {
+    // nonWebMain — общий код Android, desktop и iOS: например, системный диалог сохранения
+    // файла, которого нет в браузере
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("nonWeb") {
+                withAndroidTarget()
+                withJvm()
+                group("ios") { withIos() }
+            }
+        }
+    }
+
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
@@ -32,7 +44,6 @@ kotlin {
     }
 
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach {
@@ -44,11 +55,11 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.components.resources)
+            implementation(libs.compose.components.uiToolingPreview)
             implementation(libs.kotlinx.coroutines.core)
 
             implementation(libs.ktor.client.core)
@@ -77,13 +88,12 @@ kotlin {
 
         commonTest.dependencies {
             implementation(kotlin("test"))
-            @OptIn(ExperimentalComposeLibrary::class)
-            implementation(compose.uiTest)
+            implementation(libs.compose.ui.test)
             implementation(libs.kotlinx.coroutines.test)
         }
 
         androidMain.dependencies {
-            implementation(compose.uiTooling)
+            implementation(libs.compose.ui.tooling)
             implementation(libs.androidx.activityCompose)
             implementation(libs.kotlinx.coroutines.android)
             implementation(libs.ktor.client.okhttp)
@@ -104,7 +114,7 @@ kotlin {
 
 android {
     namespace = "com.adden00.tkstoragekeys"
-    compileSdk = 35
+    compileSdk = 37
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_18
@@ -112,8 +122,9 @@ android {
     }
 
     defaultConfig {
-        minSdk = 21
-        targetSdk = 35
+        // 23 — минимум для Compose Multiplatform 1.12
+        minSdk = 23
+        targetSdk = 37
 
         applicationId = "com.adden00.tkstoragekeys"
         versionCode = 5
@@ -145,10 +156,6 @@ compose.desktop {
             windows {
                 iconFile.set(project.file("desktopAppIcons/WindowsIcon.ico"))
             }
-//            macOS {
-//                iconFile.set(project.file("desktopAppIcons/MacosIcon.icns"))
-//                bundleID = "com.adden00.tkstoragekeys.desktopApp"
-//            }
         }
     }
 }

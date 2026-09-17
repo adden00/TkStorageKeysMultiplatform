@@ -82,7 +82,7 @@ import com.adden00.tkstoragekeys.theme.TkRed
 import com.adden00.tkstoragekeys.theme.TkWhite
 import com.adden00.tkstoragekeys.theme.TkYellow
 import com.adden00.tkstoragekeys.utils.DateUtils
-import io.github.vinceglb.filekit.compose.rememberFileSaverLauncher
+import com.adden00.tkstoragekeys.utils.rememberFileExporter
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -114,7 +114,7 @@ fun ReceptionScreen(
 
     val state = viewModel.viewState.collectAsState()
 
-    val fileSaverLauncher = rememberFileSaverLauncher { /* no action needed after save */ }
+    val fileExporter = rememberFileExporter()
 
     val showPersonPicker = remember { mutableStateOf(false) }
 
@@ -139,7 +139,7 @@ fun ReceptionScreen(
                     snackbarHostState.showSnackbar(effect.message)
                 }
                 is ReceptionScreenEffect.SaveFile -> {
-                    fileSaverLauncher.launch(
+                    fileExporter.save(
                         bytes = effect.bytes,
                         baseName = "Клубное снаряжение_${DateUtils.getCurrentDateTimeForFileName()}",
                         extension = effect.extension
