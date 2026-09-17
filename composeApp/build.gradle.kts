@@ -122,13 +122,12 @@ android {
     }
 
     defaultConfig {
-        // 23 — минимум для Compose Multiplatform 1.12
         minSdk = 23
         targetSdk = 37
 
         applicationId = "com.adden00.tkstoragekeys"
-        versionCode = 5
-        versionName = "2.1.0"
+        versionCode = 6
+        versionName = "2.1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -148,7 +147,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "TkStorageKeysMultiplatform"
-            packageVersion = "2.0.0"
+            packageVersion = "2.1.1"
 
             linux {
                 iconFile.set(project.file("desktopAppIcons/LinuxIcon.png"))
