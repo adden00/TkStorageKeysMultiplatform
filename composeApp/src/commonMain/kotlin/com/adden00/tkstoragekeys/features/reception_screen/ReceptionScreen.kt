@@ -512,7 +512,21 @@ fun ReceptionScreen(
                             val target = equipItem.copy(locationUserId = null)
                             navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                         },
-                        onHistoryClick = { navigator.push(Screens.ItemHistory(itemId = equipItem.id)) }
+                        onHistoryClick = { navigator.push(Screens.ItemHistory(itemId = equipItem.id)) },
+                        onCopyClick = {
+                            // копия — новая вещь: характеристики те же, номер пустой, лежит на складе
+                            val copy = EquipItem(
+                                category = equipItem.category,
+                                brand = equipItem.brand,
+                                name = equipItem.name,
+                                color = equipItem.color,
+                                weigh = equipItem.weigh,
+                                quality = equipItem.quality,
+                                location = storageString,
+                                locationUserId = WAREHOUSE_ID
+                            )
+                            navigator.push(Screens.AddNewEquip(startItem = copy))
+                        }
                     )
                 }
 

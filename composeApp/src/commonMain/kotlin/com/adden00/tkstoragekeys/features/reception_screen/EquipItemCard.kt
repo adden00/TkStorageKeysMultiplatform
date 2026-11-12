@@ -54,6 +54,7 @@ fun EquipItemCard(
     onPersonClick: (userId: String) -> Unit,
     onEditClick: () -> Unit,
     onHistoryClick: () -> Unit,
+    onCopyClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -110,14 +111,24 @@ fun EquipItemCard(
                 }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            if (item.date.isNotBlank()) {
                 Text(
-                    modifier = Modifier.weight(1f),
-                    text = if (item.date.isNotBlank()) "Изменено ${item.date}" else "",
+                    text = "Изменено ${item.date}",
                     style = TextStyle(fontSize = 12.sp, color = TkGrey)
                 )
+            }
+
+            // три кнопки рядом с датой на телефоне не помещаются — дата вынесена строкой выше
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 TextButton(onClick = onHistoryClick) {
                     Text("История", color = TkMain)
+                }
+                TextButton(onClick = onCopyClick) {
+                    Text("Копировать", color = TkMain)
                 }
                 TextButton(onClick = onEditClick) {
                     Text(stringResource(Res.string.edit).replaceFirstChar { it.uppercase() }, color = TkMain)
