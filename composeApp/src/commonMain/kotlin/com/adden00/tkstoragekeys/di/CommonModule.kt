@@ -6,6 +6,7 @@ import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.network.BackendApiService
 import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
+import com.adden00.tkstoragekeys.features.global_history_screen.GlobalHistoryViewModel
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
 import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupViewModel
 import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
@@ -94,6 +95,10 @@ fun viewModelModule() = module {
 
     viewModel {
         ItemHistoryViewModel()
+    }
+
+    viewModel {
+        GlobalHistoryViewModel()
     }
 
     viewModel {

@@ -4,6 +4,8 @@ import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.ClubUser
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.ExportFormat
+import com.adden00.tkstoragekeys.data.model.HistoryPage
+import com.adden00.tkstoragekeys.data.model.HistoryPageResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryEntry
 import com.adden00.tkstoragekeys.data.model.UserSearchResult
 import com.adden00.tkstoragekeys.data.model.toClubUser
@@ -63,6 +65,17 @@ class StorageRepository(
         return response.entries.map { it.toItemHistoryEntry() }
     }
 
+    suspend fun getHistory(before: String?): HistoryPage =
+        api.getHistory(before, HISTORY_PAGE_SIZE).toHistoryPage()
+
+    suspend fun getUserHistory(userId: String, before: String?): HistoryPage =
+        api.getUserHistory(userId, before, HISTORY_PAGE_SIZE).toHistoryPage()
+
+    private fun HistoryPageResponse.toHistoryPage(): HistoryPage {
+        if (!success) throw EquipNotFoundException(message)
+        return HistoryPage(entries = entries.map { it.toItemHistoryEntry() }, hasMore = hasMore)
+    }
+
     suspend fun exportItems(format: ExportFormat): ByteArray = api.exportItems(format)
 
     suspend fun exportToSheets() {
@@ -109,5 +122,7 @@ class StorageRepository(
         ).joinToString(". ").ifEmpty { "Справочник обновлён" }
     }
 }
+
+private const val HISTORY_PAGE_SIZE = 30
 
 class EquipNotFoundException(override val message: String? = null) : RuntimeException(message)

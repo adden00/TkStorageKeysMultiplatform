@@ -70,9 +70,10 @@ fun EnterPasswordScreen(
         if (key == KEY || key == TEST_KEY) {
             appSettings.keyHolderName = nameEditText.value
             appSettings.isTestEnv = key == TEST_KEY
-            navigator.replace(Screens.Reception())
+            navigator.replace(Screens.Main)
         } else {
             CoroutineScope(Dispatchers.Main).launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
                 snackbarHostState.showSnackbar("Ключ неверный")
             }
         }
@@ -81,7 +82,7 @@ fun EnterPasswordScreen(
     LaunchedEffect("checkName") {
         appSettings.dropLegacyInventorySession()
         if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
-            navigator.replace(Screens.Reception())
+            navigator.replace(Screens.Main)
         }
     }
 

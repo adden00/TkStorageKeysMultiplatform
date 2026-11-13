@@ -24,12 +24,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -60,10 +57,9 @@ import com.adden00.tkstoragekeys.theme.Dimens
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
-import org.jetbrains.compose.resources.painterResource
+import com.adden00.tkstoragekeys.ui.ScreenHeader
+import com.adden00.tkstoragekeys.ui.showToast
 import org.koin.compose.viewmodel.koinViewModel
-import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
-import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,7 +96,7 @@ fun NewEquipScreen(
         viewModel.viewEffect.collect { effect ->
             when (effect) {
                 is NewEquipScreenEffect.ShowToast -> {
-                    snackbarHostState.showSnackbar(effect.message, duration = SnackbarDuration.Short)
+                    showToast(snackbarHostState, effect.message)
                 }
 
                 is NewEquipScreenEffect.NavigateBack -> {
@@ -128,29 +124,19 @@ fun NewEquipScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            ScreenHeader(
+                title = if (editingItemId.isBlank()) "Добавление предмета" else "Редактирование № $editingItemId",
+                onBack = { navigator.pop() },
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             Row(
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.Bottom,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.PaddingHorizontal)
             ) {
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedIconButton(
-                    onClick = {
-                        navigator.pop()
-                    }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_back),
-                        contentDescription = "back"
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
                 OutlinedTextField(
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                     modifier = Modifier
@@ -173,6 +159,7 @@ fun NewEquipScreen(
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Button(
+                    modifier = Modifier.height(56.dp),
                     onClick = {
                         viewModel.obtainEvent(NewEquipScreenEvent.GetFreeId)
                     },
@@ -491,6 +478,8 @@ fun NewEquipScreen(
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
         }
 
