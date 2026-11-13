@@ -14,4 +14,10 @@ data class ItemHistoryEntry(
     val info: String,
     val timestamp: String,
     val keyholderName: String,
+    val mongoId: String = "",
+)
+
+data class HistoryPage(
+    val entries: List<ItemHistoryEntry>,
+    val hasMore: Boolean,
 )

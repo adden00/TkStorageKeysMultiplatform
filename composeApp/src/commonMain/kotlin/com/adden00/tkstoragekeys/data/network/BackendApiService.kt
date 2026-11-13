@@ -7,6 +7,7 @@ import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
 import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.ExportSheetsResponse
+import com.adden00.tkstoragekeys.data.model.HistoryPageResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
 import com.adden00.tkstoragekeys.data.model.UpdateItemRequest
@@ -75,6 +76,20 @@ class BackendApiService(
 
     override suspend fun getItemHistory(id: String): ItemHistoryResponse =
         api.get("$base/items/$id/history").body()
+
+    override suspend fun getHistory(before: String?, size: Int): HistoryPageResponse =
+        getHistoryPage("$base/history", before, size)
+
+    override suspend fun getUserHistory(userId: String, before: String?, size: Int): HistoryPageResponse =
+        getHistoryPage("$base/users/$userId/history", before, size)
+
+    private suspend fun getHistoryPage(url: String, before: String?, size: Int): HistoryPageResponse =
+        api.get(url) {
+            url {
+                before?.let { parameters.append("before", it) }
+                parameters.append("size", size.toString())
+            }
+        }.body()
 
     override suspend fun exportItems(format: ExportFormat): ByteArray =
         api.get("$base/items/export/${format.path}").body()

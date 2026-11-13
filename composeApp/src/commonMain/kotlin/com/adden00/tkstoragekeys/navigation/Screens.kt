@@ -15,8 +15,7 @@ import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipScreen
 import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordScreen
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryScreen
-import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupScreen
-import com.adden00.tkstoragekeys.features.people_search_screen.SearchScreen
+import com.adden00.tkstoragekeys.features.main_screen.MainScreen
 import com.adden00.tkstoragekeys.features.person_details_screen.PersonDetailsScreen
 import com.adden00.tkstoragekeys.features.reception_screen.ReceptionScreen
 import com.adden00.tkstoragekeys.features.tutorial_screen.TutorialScreen
@@ -54,13 +53,6 @@ object Screens {
         }
     }
 
-    object Search : Screen {
-        @Composable
-        override fun Content() {
-            SearchScreen()
-        }
-    }
-
     data class AddNewEquip(
         val editingItemId: String = "",
         @Transient
@@ -69,13 +61,6 @@ object Screens {
         @Composable
         override fun Content() {
             NewEquipScreen(editingItemId, startItem)
-        }
-    }
-
-    object LocationCleanup : Screen {
-        @Composable
-        override fun Content() {
-            LocationCleanupScreen()
         }
     }
 
@@ -90,6 +75,13 @@ object Screens {
         @Composable
         override fun Content() {
             ItemHistoryScreen(itemId = itemId)
+        }
+    }
+
+    object Main : Screen {
+        @Composable
+        override fun Content() {
+            MainScreen()
         }
     }
 
