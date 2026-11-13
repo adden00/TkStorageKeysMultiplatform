@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.adden00.tkstoragekeys.data.EquipNotFoundException
 import com.adden00.tkstoragekeys.data.StorageRepository
+import com.adden00.tkstoragekeys.data.auth.AuthRepository
 import com.adden00.tkstoragekeys.data.model.isWritingOff
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEffect
 import com.adden00.tkstoragekeys.features.reception_screen.mvi.ReceptionScreenEvent
@@ -23,6 +24,7 @@ import org.koin.core.component.get
 class ReceptionViewModel : ViewModel(), KoinComponent {
 
     private val storageRepository: StorageRepository = get()
+    private val authRepository: AuthRepository = get()
 
     private val _viewState = MutableStateFlow(ReceptionScreenState())
     val viewState: StateFlow<ReceptionScreenState> get() = _viewState.asStateFlow()
@@ -161,6 +163,12 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                         _viewState.update { it.copy(isExportingToSheets = false) }
                     }
                 }
+            }
+
+            ReceptionScreenEvent.Logout -> {
+                val ended = authRepository.endSession()
+                viewModelScope.launch { _viewEffect.send(ReceptionScreenEffect.OpenLogin) }
+                ended?.let { viewModelScope.launch { authRepository.revoke(it) } }
             }
 
             is ReceptionScreenEvent.ImportUsers -> {

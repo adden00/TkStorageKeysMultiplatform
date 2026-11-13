@@ -1,11 +1,13 @@
 package com.adden00.tkstoragekeys.di
 
-import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.StorageRepository
+import com.adden00.tkstoragekeys.data.auth.AuthRepository
+import com.adden00.tkstoragekeys.data.auth.SessionManager
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.network.BackendApiService
 import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
+import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordViewModel
 import com.adden00.tkstoragekeys.features.global_history_screen.GlobalHistoryViewModel
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
 import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupViewModel
@@ -25,8 +27,6 @@ import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
-
-private const val SPRING_API_URL = Constants.SPRING_BASE_URL
 
 private fun dataModule() = module {
 
@@ -56,11 +56,18 @@ private fun dataModule() = module {
 
     factory<StorageApi> {
         val appSettings = get<AppSettings>()
+        val sessionManager = get<SessionManager>()
         BackendApiService(
             api = get(),
-            baseUrlProvider = { if (appSettings.isTestEnv) Constants.TEST_BASE_URL else SPRING_API_URL }
+            isTestEnv = { appSettings.isTestEnv },
+            tokenProvider = { sessionManager.token },
+            onUnauthorized = sessionManager::onUnauthorized,
         )
     }
+
+    single { SessionManager(get()) }
+
+    factory { AuthRepository(api = get(), appSettings = get()) }
 
     factory<AppSettings> {
         AppSettings(
@@ -71,7 +78,6 @@ private fun dataModule() = module {
     factory<StorageRepository> {
         StorageRepository(
             api = get<StorageApi>(),
-            appSettings = get()
         )
     }
 
@@ -107,6 +113,10 @@ fun viewModelModule() = module {
 
     viewModel {
         PersonDetailsViewModel()
+    }
+
+    viewModel {
+        EnterPasswordViewModel()
     }
 }
 
