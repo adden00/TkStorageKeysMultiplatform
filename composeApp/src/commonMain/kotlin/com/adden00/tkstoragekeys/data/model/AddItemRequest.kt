@@ -5,5 +5,4 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AddItemRequest(
     val newItem: EquipDto,
-    val keyholderName: String
 )

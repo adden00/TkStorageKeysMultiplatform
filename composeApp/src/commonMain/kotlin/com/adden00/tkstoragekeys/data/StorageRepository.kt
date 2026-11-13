@@ -1,9 +1,10 @@
 package com.adden00.tkstoragekeys.data
 
-import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.ClubUser
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.ExportFormat
+import com.adden00.tkstoragekeys.data.model.HistoryPage
+import com.adden00.tkstoragekeys.data.model.HistoryPageResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryEntry
 import com.adden00.tkstoragekeys.data.model.UserSearchResult
 import com.adden00.tkstoragekeys.data.model.toClubUser
@@ -14,7 +15,6 @@ import com.adden00.tkstoragekeys.data.network.StorageApi
 
 class StorageRepository(
     private val api: StorageApi,
-    private val appSettings: AppSettings
 ) {
 
     suspend fun getItemFromTable(id: String): EquipItem {
@@ -31,7 +31,6 @@ class StorageRepository(
 
     suspend fun updateItem(id: String, item: EquipItem, historyAction: String = "ОБНОВЛЕНО"): EquipItem {
         val response = api.updateItem(
-            keyholderName = appSettings.keyHolderName,
             id = id,
             item = item,
             historyAction = historyAction
@@ -42,10 +41,7 @@ class StorageRepository(
     }
 
     suspend fun addItem(item: EquipItem): EquipItem {
-        val response = api.addItem(
-            appSettings.keyHolderName,
-            item
-        )
+        val response = api.addItem(item)
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)
         } else return response.equipItem.toEquipItem()
@@ -61,6 +57,17 @@ class StorageRepository(
     suspend fun getItemHistory(id: String): List<ItemHistoryEntry> {
         val response = api.getItemHistory(id)
         return response.entries.map { it.toItemHistoryEntry() }
+    }
+
+    suspend fun getHistory(before: String?): HistoryPage =
+        api.getHistory(before, HISTORY_PAGE_SIZE).toHistoryPage()
+
+    suspend fun getUserHistory(userId: String, before: String?): HistoryPage =
+        api.getUserHistory(userId, before, HISTORY_PAGE_SIZE).toHistoryPage()
+
+    private fun HistoryPageResponse.toHistoryPage(): HistoryPage {
+        if (!success) throw EquipNotFoundException(message)
+        return HistoryPage(entries = entries.map { it.toItemHistoryEntry() }, hasMore = hasMore)
     }
 
     suspend fun exportItems(format: ExportFormat): ByteArray = api.exportItems(format)
@@ -109,5 +116,7 @@ class StorageRepository(
         ).joinToString(". ").ifEmpty { "Справочник обновлён" }
     }
 }
+
+private const val HISTORY_PAGE_SIZE = 30
 
 class EquipNotFoundException(override val message: String? = null) : RuntimeException(message)

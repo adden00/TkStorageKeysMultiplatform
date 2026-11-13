@@ -11,6 +11,7 @@ data class ItemHistoryResponse(
 
 @Serializable
 data class ItemHistoryEntryDto(
+    @SerialName("mongoId") val mongoId: String = "",
     @SerialName("action") val action: String = "",
     @SerialName("id") val id: String = "",
     @SerialName("category") val category: String = "",
@@ -26,7 +27,16 @@ data class ItemHistoryEntryDto(
     @SerialName("keyholderName") val keyholderName: String = "",
 )
 
+@Serializable
+data class HistoryPageResponse(
+    @SerialName("success") val success: Boolean,
+    @SerialName("entries") val entries: List<ItemHistoryEntryDto> = emptyList(),
+    @SerialName("hasMore") val hasMore: Boolean = false,
+    @SerialName("message") val message: String? = null,
+)
+
 fun ItemHistoryEntryDto.toItemHistoryEntry() = ItemHistoryEntry(
+    mongoId = mongoId,
     action = action,
     id = id,
     category = category,

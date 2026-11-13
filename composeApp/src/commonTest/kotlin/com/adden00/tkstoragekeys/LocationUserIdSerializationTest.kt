@@ -6,7 +6,6 @@ import com.adden00.tkstoragekeys.data.model.UpdateItemRequest
 import com.adden00.tkstoragekeys.data.model.WAREHOUSE_ID
 import com.adden00.tkstoragekeys.data.model.toDto
 import com.adden00.tkstoragekeys.data.model.toEquipItem
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -22,7 +21,7 @@ class LocationUserIdSerializationTest {
 
     private fun newItemJson(item: EquipItem) =
         json.parseToJsonElement(
-            json.encodeToString(UpdateItemRequest(newItem = item.toDto(), keyholderName = "k", historyAction = "ОБНОВЛЕНО"))
+            json.encodeToString(UpdateItemRequest(newItem = item.toDto(), historyAction = "ОБНОВЛЕНО"))
         ).jsonObject.getValue("newItem").jsonObject
 
     @Test

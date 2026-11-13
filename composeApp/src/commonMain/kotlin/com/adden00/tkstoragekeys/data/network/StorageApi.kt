@@ -5,13 +5,19 @@ import com.adden00.tkstoragekeys.data.model.EquipResponse
 import com.adden00.tkstoragekeys.data.model.EquipsResponse
 import com.adden00.tkstoragekeys.data.model.ExportFormat
 import com.adden00.tkstoragekeys.data.model.ExportSheetsResponse
+import com.adden00.tkstoragekeys.data.model.HistoryPageResponse
 import com.adden00.tkstoragekeys.data.model.IdResponse
 import com.adden00.tkstoragekeys.data.model.ItemHistoryResponse
+import com.adden00.tkstoragekeys.data.model.LoginResponse
 import com.adden00.tkstoragekeys.data.model.UserResponse
 import com.adden00.tkstoragekeys.data.model.UserSearchResponse
 import com.adden00.tkstoragekeys.data.model.UsersImportResponse
 
 interface StorageApi {
+
+    suspend fun login(keyholderName: String, key: String): LoginResponse
+
+    suspend fun logout(token: String, isTestEnv: Boolean)
 
     suspend fun getItem(id: String): EquipResponse
 
@@ -21,11 +27,15 @@ interface StorageApi {
 
     suspend fun getFreeId(): IdResponse
 
-    suspend fun updateItem(keyholderName: String, id: String, item: EquipItem, historyAction: String): EquipResponse
+    suspend fun updateItem(id: String, item: EquipItem, historyAction: String): EquipResponse
 
-    suspend fun addItem(keyholderName: String, item: EquipItem): EquipResponse
+    suspend fun addItem(item: EquipItem): EquipResponse
 
     suspend fun getItemHistory(id: String): ItemHistoryResponse
+
+    suspend fun getHistory(before: String?, size: Int): HistoryPageResponse
+
+    suspend fun getUserHistory(userId: String, before: String?, size: Int): HistoryPageResponse
 
     suspend fun exportItems(format: ExportFormat): ByteArray
 

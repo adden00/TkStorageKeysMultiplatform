@@ -81,6 +81,7 @@ kotlin {
             implementation(libs.multiplatformSettings)
             implementation(libs.kotlinx.datetime)
             implementation(libs.voyager.navigator)
+            implementation(libs.navigationevent.compose)
 
             implementation(libs.filekit.core)
             implementation(libs.filekit.compose)
@@ -126,8 +127,8 @@ android {
         targetSdk = 37
 
         applicationId = "com.adden00.tkstoragekeys"
-        versionCode = 6
-        versionName = "2.1.1"
+        versionCode = 7
+        versionName = "2.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -147,7 +148,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "TkStorageKeysMultiplatform"
-            packageVersion = "2.1.1"
+            packageVersion = "2.2.0"
 
             linux {
                 iconFile.set(project.file("desktopAppIcons/LinuxIcon.png"))

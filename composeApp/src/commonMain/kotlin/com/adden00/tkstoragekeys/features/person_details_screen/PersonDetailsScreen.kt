@@ -9,14 +9,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,6 +37,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.data.model.ClubUser
 import com.adden00.tkstoragekeys.data.model.WAREHOUSE_ID
+import com.adden00.tkstoragekeys.features.history_feed.historyFeed
 import com.adden00.tkstoragekeys.features.people_search_screen.EquipItemLayout
 import com.adden00.tkstoragekeys.features.person_details_screen.mvi.PersonDetailsScreenEffect
 import com.adden00.tkstoragekeys.features.person_details_screen.mvi.PersonDetailsScreenEvent
@@ -49,11 +47,11 @@ import com.adden00.tkstoragekeys.theme.Dimens
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
-import org.jetbrains.compose.resources.painterResource
+import com.adden00.tkstoragekeys.ui.ScreenHeader
+import com.adden00.tkstoragekeys.ui.showToast
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
-import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
 @Composable
@@ -75,7 +73,8 @@ fun PersonDetailsScreen(
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
             when (effect) {
-                is PersonDetailsScreenEffect.ShowToast -> snackbarHostState.showSnackbar(effect.message)
+                is PersonDetailsScreenEffect.ShowToast -> showToast(snackbarHostState, effect.message)
+                is PersonDetailsScreenEffect.OpenItem -> navigator.push(Screens.Reception(startItem = effect.item))
             }
         }
     }
@@ -89,29 +88,10 @@ fun PersonDetailsScreen(
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedIconButton(onClick = { navigator.pop() }) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_back),
-                        contentDescription = "back",
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    modifier = Modifier.weight(1f),
-                    text = state.value.user?.fullName ?: "Карточка человека",
-                    style = TextStyle(fontSize = 18.sp, textAlign = TextAlign.Center),
-                )
-                Spacer(modifier = Modifier.width(48.dp))
-            }
+            ScreenHeader(
+                title = state.value.user?.fullName ?: "Карточка человека",
+                onBack = { navigator.pop() },
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -174,6 +154,24 @@ fun PersonDetailsScreen(
                                 }
                             )
                         }
+
+                        item(key = "history_header") {
+                            Text(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Dimens.PaddingHorizontal, vertical = 8.dp),
+                                text = "История",
+                                style = TextStyle(fontSize = 18.sp),
+                            )
+                        }
+
+                        historyFeed(
+                            state = state.value.history,
+                            onLoadMore = { viewModel.obtainEvent(PersonDetailsScreenEvent.LoadMoreHistory) },
+                            onRetry = { viewModel.obtainEvent(PersonDetailsScreenEvent.RetryHistory) },
+                            onEntryClick = { viewModel.obtainEvent(PersonDetailsScreenEvent.OpenHistoryItem(it)) },
+                            emptyText = "Пока пусто. История по человеку ведётся с этой версии приложения",
+                        )
 
                         item { Spacer(modifier = Modifier.height(16.dp)) }
                     }

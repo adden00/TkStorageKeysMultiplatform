@@ -1,11 +1,14 @@
 package com.adden00.tkstoragekeys.di
 
-import com.adden00.tkstoragekeys.Constants
 import com.adden00.tkstoragekeys.data.StorageRepository
+import com.adden00.tkstoragekeys.data.auth.AuthRepository
+import com.adden00.tkstoragekeys.data.auth.SessionManager
 import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.network.BackendApiService
 import com.adden00.tkstoragekeys.data.network.StorageApi
 import com.adden00.tkstoragekeys.features.add_equip_screen.NewEquipViewModel
+import com.adden00.tkstoragekeys.features.enter_password_screen.EnterPasswordViewModel
+import com.adden00.tkstoragekeys.features.global_history_screen.GlobalHistoryViewModel
 import com.adden00.tkstoragekeys.features.item_history_screen.ItemHistoryViewModel
 import com.adden00.tkstoragekeys.features.location_cleanup.LocationCleanupViewModel
 import com.adden00.tkstoragekeys.features.people_search_screen.PeopleSearchViewModel
@@ -19,20 +22,20 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.http.HttpHeaders
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.core.context.startKoin
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.module
 
-private const val SPRING_API_URL = Constants.SPRING_BASE_URL
-
 private fun dataModule() = module {
 
     factory<HttpClient> {
         HttpClient {
             install(Logging) {
-                level = LogLevel.BODY
+                level = LogLevel.INFO
+                sanitizeHeader { it == HttpHeaders.Authorization }
                 logger = object : Logger {
                     override fun log(message: String) {
                         // Custom log logic, for example, log to a file
@@ -55,11 +58,18 @@ private fun dataModule() = module {
 
     factory<StorageApi> {
         val appSettings = get<AppSettings>()
+        val sessionManager = get<SessionManager>()
         BackendApiService(
             api = get(),
-            baseUrlProvider = { if (appSettings.isTestEnv) Constants.TEST_BASE_URL else SPRING_API_URL }
+            isTestEnv = { appSettings.isTestEnv },
+            tokenProvider = { sessionManager.token },
+            onUnauthorized = sessionManager::onUnauthorized,
         )
     }
+
+    single { SessionManager(get()) }
+
+    factory { AuthRepository(api = get(), appSettings = get()) }
 
     factory<AppSettings> {
         AppSettings(
@@ -70,7 +80,6 @@ private fun dataModule() = module {
     factory<StorageRepository> {
         StorageRepository(
             api = get<StorageApi>(),
-            appSettings = get()
         )
     }
 
@@ -97,11 +106,19 @@ fun viewModelModule() = module {
     }
 
     viewModel {
+        GlobalHistoryViewModel()
+    }
+
+    viewModel {
         UsersSearchViewModel()
     }
 
     viewModel {
         PersonDetailsViewModel()
+    }
+
+    viewModel {
+        EnterPasswordViewModel()
     }
 }
 

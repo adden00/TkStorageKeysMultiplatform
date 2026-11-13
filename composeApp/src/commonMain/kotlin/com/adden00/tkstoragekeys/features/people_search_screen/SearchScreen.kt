@@ -78,11 +78,11 @@ import com.adden00.tkstoragekeys.theme.TkLightBlue
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
 import com.adden00.tkstoragekeys.theme.TkYellow
+import com.adden00.tkstoragekeys.ui.showToast
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
-import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_ok
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_return
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
@@ -110,50 +110,31 @@ fun SearchScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(4.dp))
-            Row(
+            Spacer(modifier = Modifier.height(8.dp))
+            SecondaryTabRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically
+                selectedTabIndex = selectedTab,
+                containerColor = Color.Transparent,
+                contentColor = TkMain,
+                indicator = {
+                    TabRowDefaults.SecondaryIndicator(
+                        modifier = Modifier.tabIndicatorOffset(selectedTab, matchContentSize = false),
+                        color = TkMain
+                    )
+                }
             ) {
-                OutlinedIconButton(
-                    onClick = {
-                        navigator.pop()
-                    }
-                ) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_back),
-                        contentDescription = "back"
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                SecondaryTabRow(
-                    modifier = Modifier.weight(1f),
-                    selectedTabIndex = selectedTab,
-                    containerColor = Color.Transparent,
-                    contentColor = TkMain,
-                    indicator = {
-                        TabRowDefaults.SecondaryIndicator(
-                            modifier = Modifier.tabIndicatorOffset(selectedTab, matchContentSize = false),
-                            color = TkMain
-                        )
-                    }
-                ) {
-                    Tab(
-                        selected = selectedTab == TAB_EQUIP,
-                        onClick = { selectedTab = TAB_EQUIP },
-                        text = { Text("Снаряжение") }
-                    )
-                    Tab(
-                        selected = selectedTab == TAB_PEOPLE,
-                        onClick = { selectedTab = TAB_PEOPLE },
-                        text = { Text("Люди") }
-                    )
-                }
+                Tab(
+                    selected = selectedTab == TAB_EQUIP,
+                    onClick = { selectedTab = TAB_EQUIP },
+                    text = { Text("Снаряжение") }
+                )
+                Tab(
+                    selected = selectedTab == TAB_PEOPLE,
+                    onClick = { selectedTab = TAB_PEOPLE },
+                    text = { Text("Люди") }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -206,7 +187,7 @@ private fun ColumnScope.EquipSearchContent(
         viewModel.viewEffect.collect { effect ->
             when (effect) {
                 is PeopleSearchScreenEffect.ShowToast -> {
-                    snackbarHostState.showSnackbar(effect.message)
+                    showToast(snackbarHostState, effect.message)
                 }
             }
         }

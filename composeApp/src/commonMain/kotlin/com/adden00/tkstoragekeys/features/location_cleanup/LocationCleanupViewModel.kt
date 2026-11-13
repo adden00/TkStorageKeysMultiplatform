@@ -106,7 +106,7 @@ class LocationCleanupViewModel : ViewModel(), KoinComponent {
 
             val done = group.count - failed.size
             val message = if (failed.isEmpty()) {
-                "$userName — привязано вещей: $done"
+                "$userName — привязано предметов: $done"
             } else {
                 "Привязано $done из ${group.count}, не удалось: ${failed.size}. Попробуйте ещё раз"
             }

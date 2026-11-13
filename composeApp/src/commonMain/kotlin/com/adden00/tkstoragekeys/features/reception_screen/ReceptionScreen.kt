@@ -24,10 +24,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -52,7 +52,6 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -81,6 +80,8 @@ import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkRed
 import com.adden00.tkstoragekeys.theme.TkWhite
 import com.adden00.tkstoragekeys.theme.TkYellow
+import com.adden00.tkstoragekeys.ui.ScreenHeader
+import com.adden00.tkstoragekeys.ui.showToast
 import com.adden00.tkstoragekeys.utils.DateUtils
 import com.adden00.tkstoragekeys.utils.rememberFileExporter
 import org.jetbrains.compose.resources.painterResource
@@ -88,10 +89,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
-import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_log_out
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_menu
-import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_people_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_search
 import tkstoragekeysmultiplatform.composeapp.generated.resources.storage
 
@@ -136,8 +135,9 @@ fun ReceptionScreen(
         viewModel.viewEffect.collect { effect ->
             when (effect) {
                 is ReceptionScreenEffect.ShowToast -> {
-                    snackbarHostState.showSnackbar(effect.message)
+                    showToast(snackbarHostState, effect.message)
                 }
+                ReceptionScreenEffect.OpenLogin -> navigator.replaceAll(Screens.EnterPassword)
                 is ReceptionScreenEffect.SaveFile -> {
                     fileExporter.save(
                         bytes = effect.bytes,
@@ -251,51 +251,11 @@ fun ReceptionScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically
+            ScreenHeader(
+                title = "Выдача снаряжения",
+                onBack = if (fromSearch) ({ navigator.pop() }) else null,
             ) {
-                if (fromSearch) {
-                    OutlinedIconButton(onClick = { navigator.pop() }) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_back),
-                            contentDescription = "back"
-                        )
-                    }
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = "Выдача снаряжения",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    )
-                } else {
-                    OutlinedIconButton(
-                        onClick = {
-                            appSettings.keyHolderName = ""
-                            appSettings.isTestEnv = false
-                            navigator.replace(Screens.EnterPassword)
-                        }
-                    ) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_log_out),
-                            contentDescription = "back"
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        modifier = Modifier.weight(1f),
-                        text = "Поиск и выдача снаряжения",
-                        style = TextStyle(
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    )
+                if (!fromSearch) {
                     if (appSettings.isTestEnv) {
                         Text(
                             modifier = Modifier
@@ -308,7 +268,7 @@ fun ReceptionScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     val menuExpanded = remember { mutableStateOf(false) }
                     Box {
-                        OutlinedIconButton(onClick = { menuExpanded.value = true }) {
+                        IconButton(onClick = { menuExpanded.value = true }) {
                             Icon(
                                 modifier = Modifier.size(24.dp),
                                 painter = painterResource(Res.drawable.ic_menu),
@@ -324,13 +284,6 @@ fun ReceptionScreen(
                                 onClick = {
                                     menuExpanded.value = false
                                     navigator.push(Screens.Tutorial)
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Разбор местоположений") },
-                                onClick = {
-                                    menuExpanded.value = false
-                                    navigator.push(Screens.LocationCleanup)
                                 }
                             )
                             DropdownMenuItem(
@@ -395,6 +348,21 @@ fun ReceptionScreen(
                                 onClick = {
                                     menuExpanded.value = false
                                     viewModel.obtainEvent(ReceptionScreenEvent.ImportUsers)
+                                }
+                            )
+                            HorizontalDivider()
+                            DropdownMenuItem(
+                                text = { Text("Выйти") },
+                                leadingIcon = {
+                                    Icon(
+                                        modifier = Modifier.size(20.dp),
+                                        painter = painterResource(Res.drawable.ic_log_out),
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = {
+                                    menuExpanded.value = false
+                                    viewModel.obtainEvent(ReceptionScreenEvent.Logout)
                                 }
                             )
                         }
@@ -469,27 +437,6 @@ fun ReceptionScreen(
                             )
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        modifier = Modifier.size(48.dp),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = TkMain,
-                            contentColor = TkWhite,
-                            disabledContainerColor = TkMain.copy(alpha = 0.8f)
-                        ),
-                        onClick = {
-                            navigator.push(
-                                Screens.Search
-                            )
-                        }) {
-                        Icon(
-                            modifier = Modifier.size(24.dp),
-                            painter = painterResource(Res.drawable.ic_people_search),
-                            contentDescription = "search"
-                        )
-
-                    }
                 }
             }
 
@@ -512,7 +459,21 @@ fun ReceptionScreen(
                             val target = equipItem.copy(locationUserId = null)
                             navigator.push(Screens.AddNewEquip(editingItemId = equipItem.id, startItem = target))
                         },
-                        onHistoryClick = { navigator.push(Screens.ItemHistory(itemId = equipItem.id)) }
+                        onHistoryClick = { navigator.push(Screens.ItemHistory(itemId = equipItem.id)) },
+                        onCopyClick = {
+                            // копия — новая вещь: характеристики те же, номер пустой, лежит на складе
+                            val copy = EquipItem(
+                                category = equipItem.category,
+                                brand = equipItem.brand,
+                                name = equipItem.name,
+                                color = equipItem.color,
+                                weigh = equipItem.weigh,
+                                quality = equipItem.quality,
+                                location = storageString,
+                                locationUserId = WAREHOUSE_ID
+                            )
+                            navigator.push(Screens.AddNewEquip(startItem = copy))
+                        }
                     )
                 }
 

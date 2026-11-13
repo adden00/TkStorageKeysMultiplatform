@@ -16,8 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -52,10 +50,9 @@ import com.adden00.tkstoragekeys.theme.TkGreen
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
 import com.adden00.tkstoragekeys.theme.TkWhite
-import org.jetbrains.compose.resources.painterResource
+import com.adden00.tkstoragekeys.ui.ScreenHeader
+import com.adden00.tkstoragekeys.ui.showToast
 import org.koin.compose.viewmodel.koinViewModel
-import tkstoragekeysmultiplatform.composeapp.generated.resources.Res
-import tkstoragekeysmultiplatform.composeapp.generated.resources.ic_back
 
 /**
  * Разбор местоположений, записанных свободным текстом: выбрать человека один раз
@@ -77,7 +74,7 @@ fun LocationCleanupScreen(
     LaunchedEffect("side effects") {
         viewModel.viewEffect.collect { effect ->
             when (effect) {
-                is LocationCleanupScreenEffect.ShowToast -> snackbarHostState.showSnackbar(effect.message)
+                is LocationCleanupScreenEffect.ShowToast -> showToast(snackbarHostState, effect.message)
             }
         }
     }
@@ -106,33 +103,13 @@ fun LocationCleanupScreen(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            ScreenHeader(
+                title = "Разбор непривязанных предметов",
+                subtitle = if (state.value.groups.isNotEmpty()) {
+                    "${state.value.groups.size} записей · ${state.value.totalItems} предметов"
+                } else null,
+            )
             Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.PaddingHorizontal),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                OutlinedIconButton(onClick = { navigator.pop() }) {
-                    Icon(
-                        modifier = Modifier.size(24.dp),
-                        painter = painterResource(Res.drawable.ic_back),
-                        contentDescription = "back",
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Разбор местоположений",
-                        style = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Medium)
-                    )
-                    if (state.value.groups.isNotEmpty()) {
-                        Text(
-                            text = "${state.value.groups.size} записей · ${state.value.totalItems} вещей",
-                            style = TextStyle(fontSize = 13.sp, color = TkGrey)
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
 
             when {
                 state.value.isLoading && state.value.groups.isEmpty() -> {
@@ -255,10 +232,10 @@ private fun itemsLabel(count: Int): String {
     val tail = count % 10
     val hundred = count % 100
     val word = when {
-        hundred in 11..14 -> "вещей"
-        tail == 1 -> "вещь"
-        tail in 2..4 -> "вещи"
-        else -> "вещей"
+        hundred in 11..14 -> "предметов"
+        tail == 1 -> "предмет"
+        tail in 2..4 -> "предмета"
+        else -> "предметов"
     }
     return "$count $word"
 }
