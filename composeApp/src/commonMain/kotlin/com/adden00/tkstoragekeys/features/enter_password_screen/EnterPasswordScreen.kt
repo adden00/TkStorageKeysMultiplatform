@@ -7,11 +7,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -20,6 +22,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -40,22 +43,21 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.adden00.tkstoragekeys.Constants
-import com.adden00.tkstoragekeys.data.local.AppSettings
+import com.adden00.tkstoragekeys.features.enter_password_screen.mvi.EnterPasswordScreenEffect
+import com.adden00.tkstoragekeys.features.enter_password_screen.mvi.EnterPasswordScreenEvent
 import com.adden00.tkstoragekeys.navigation.Screens
 import com.adden00.tkstoragekeys.theme.TkGrey
 import com.adden00.tkstoragekeys.theme.TkMain
-import com.adden00.tkstoragekeys.utils.Platform
-import com.adden00.tkstoragekeys.utils.getPlatform
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.koin.compose.koinInject
+import com.adden00.tkstoragekeys.theme.TkWhite
+import com.adden00.tkstoragekeys.ui.showToast
+import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun EnterPasswordScreen(
     navigator: Navigator = LocalNavigator.currentOrThrow,
-    appSettings: AppSettings = koinInject()
 ) {
+    val viewModel: EnterPasswordViewModel = koinViewModel()
+    val state = viewModel.viewState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     val nameEditText = remember { mutableStateOf("") }
@@ -65,24 +67,16 @@ fun EnterPasswordScreen(
     val passwordFocus = remember { FocusRequester() }
 
     fun tryLogin() {
-        if (nameEditText.value.isEmpty()) return
-        val key = passwordEditText.value.trim()
-        if (key == KEY || key == TEST_KEY) {
-            appSettings.keyHolderName = nameEditText.value
-            appSettings.isTestEnv = key == TEST_KEY
-            navigator.replace(Screens.Main)
-        } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar("Ключ неверный")
-            }
-        }
+        viewModel.obtainEvent(EnterPasswordScreenEvent.Login(nameEditText.value, passwordEditText.value))
     }
 
-    LaunchedEffect("checkName") {
-        appSettings.dropLegacyInventorySession()
-        if (appSettings.keyHolderName.isNotEmpty() && getPlatform() != Platform.WEB) {
-            navigator.replace(Screens.Main)
+    LaunchedEffect("side effects") {
+        viewModel.obtainEvent(EnterPasswordScreenEvent.CheckSession)
+        viewModel.viewEffect.collect { effect ->
+            when (effect) {
+                EnterPasswordScreenEffect.OpenMain -> navigator.replace(Screens.Main)
+                is EnterPasswordScreenEffect.ShowToast -> showToast(snackbarHostState, effect.message)
+            }
         }
     }
 
@@ -148,12 +142,16 @@ fun EnterPasswordScreen(
                         containerColor = TkMain,
                         disabledContainerColor = TkMain.copy(alpha = 0.8f)
                     ),
-                    enabled = nameEditText.value.isNotEmpty(),
+                    enabled = nameEditText.value.isNotEmpty() && !state.value.isLoading,
                     shape = RoundedCornerShape(Constants.CORNERS_RADIUS),
                 ) {
-                    Text(
-                        "Войти"
-                    )
+                    if (state.value.isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), color = TkWhite, strokeWidth = 2.dp)
+                    } else {
+                        Text(
+                            "Войти"
+                        )
+                    }
                 }
 
             }
@@ -167,8 +165,3 @@ private fun Modifier.onEnterKey(action: () -> Unit): Modifier = onPreviewKeyEven
     if (isEnter && event.type == KeyEventType.KeyDown) action()
     isEnter
 }
-
-private const val KEY = "925720"
-
-// обычный режим, но запросы уходят на локальный бэкенд (Constants.TEST_BASE_URL)
-private const val TEST_KEY = "testenv"

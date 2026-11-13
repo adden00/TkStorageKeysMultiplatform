@@ -137,6 +137,7 @@ fun ReceptionScreen(
                 is ReceptionScreenEffect.ShowToast -> {
                     showToast(snackbarHostState, effect.message)
                 }
+                ReceptionScreenEffect.OpenLogin -> navigator.replaceAll(Screens.EnterPassword)
                 is ReceptionScreenEffect.SaveFile -> {
                     fileExporter.save(
                         bytes = effect.bytes,
@@ -361,9 +362,7 @@ fun ReceptionScreen(
                                 },
                                 onClick = {
                                     menuExpanded.value = false
-                                    appSettings.keyHolderName = ""
-                                    appSettings.isTestEnv = false
-                                    navigator.replace(Screens.EnterPassword)
+                                    viewModel.obtainEvent(ReceptionScreenEvent.Logout)
                                 }
                             )
                         }

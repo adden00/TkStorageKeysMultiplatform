@@ -1,6 +1,5 @@
 package com.adden00.tkstoragekeys.data
 
-import com.adden00.tkstoragekeys.data.local.AppSettings
 import com.adden00.tkstoragekeys.data.model.ClubUser
 import com.adden00.tkstoragekeys.data.model.EquipItem
 import com.adden00.tkstoragekeys.data.model.ExportFormat
@@ -16,7 +15,6 @@ import com.adden00.tkstoragekeys.data.network.StorageApi
 
 class StorageRepository(
     private val api: StorageApi,
-    private val appSettings: AppSettings
 ) {
 
     suspend fun getItemFromTable(id: String): EquipItem {
@@ -33,7 +31,6 @@ class StorageRepository(
 
     suspend fun updateItem(id: String, item: EquipItem, historyAction: String = "ОБНОВЛЕНО"): EquipItem {
         val response = api.updateItem(
-            keyholderName = appSettings.keyHolderName,
             id = id,
             item = item,
             historyAction = historyAction
@@ -44,10 +41,7 @@ class StorageRepository(
     }
 
     suspend fun addItem(item: EquipItem): EquipItem {
-        val response = api.addItem(
-            appSettings.keyHolderName,
-            item
-        )
+        val response = api.addItem(item)
         if (!response.success || response.equipItem == null) {
             throw EquipNotFoundException(response.message)
         } else return response.equipItem.toEquipItem()

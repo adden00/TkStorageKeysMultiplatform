@@ -16,6 +16,7 @@ sealed class ReceptionScreenEvent {
     data class Export(val format: ExportFormat) : ReceptionScreenEvent()
     data object ExportToSheets : ReceptionScreenEvent()
     data object ImportUsers : ReceptionScreenEvent()
+    data object Logout : ReceptionScreenEvent()
 }
 
 enum class UpdateType {

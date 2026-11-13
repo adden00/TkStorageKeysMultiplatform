@@ -7,6 +7,7 @@ class AppSettings(private val settings: Settings) {
     companion object {
         private const val KEYHOLDER_NAME = "KEYHOLDER_NAME"
         private const val TEST_ENV = "TEST_ENV"
+        private const val AUTH_TOKEN = "AUTH_TOKEN"
 
         /** Флаг режима инвентаризации из старых версий. Режим убран, ключ читается только миграцией. */
         private const val LEGACY_INVENTORY_MODE = "INVENTORISATION_MODE"
@@ -30,10 +31,16 @@ class AppSettings(private val settings: Settings) {
             settings.putBoolean(TEST_ENV, value)
         }
 
-    var keyHolderName: String
-        get() = settings.getString(KEYHOLDER_NAME, "")
+    var authToken: String
+        get() = settings.getString(AUTH_TOKEN, "")
         set(value) {
-            settings.putString(KEYHOLDER_NAME, value)
+            settings.putString(AUTH_TOKEN, value)
         }
+
+    fun clearSession() {
+        settings.remove(AUTH_TOKEN)
+        settings.remove(KEYHOLDER_NAME)
+        settings.remove(TEST_ENV)
+    }
 
 }
