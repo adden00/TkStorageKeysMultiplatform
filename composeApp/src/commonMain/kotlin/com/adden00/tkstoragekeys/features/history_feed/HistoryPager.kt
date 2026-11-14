@@ -59,7 +59,7 @@ class HistoryPager(
             }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             _state.update { it.copy(isLoading = false, isRefreshing = false, error = e.message ?: "Ошибка загрузки истории") }
         }
     }

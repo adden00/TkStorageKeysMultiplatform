@@ -36,7 +36,7 @@ class ItemHistoryViewModel : ViewModel(), KoinComponent {
                     try {
                         val entries = storageRepository.getItemHistory(event.itemId)
                         _viewState.update { it.copy(entries = entries, error = "") }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(ItemHistoryScreenEffect.ShowToast("Ошибка загрузки истории: ${e.message ?: ""}"))
                         _viewState.update { it.copy(error = e.message ?: "Ошибка") }
                     } finally {

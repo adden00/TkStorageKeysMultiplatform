@@ -20,6 +20,7 @@ import com.adden00.tkstoragekeys.data.model.toDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.HttpResponseValidator
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
@@ -44,8 +45,17 @@ class BackendApiService(
     private val api = api.config {
         defaultRequest {
             header("X-App-Version-Code", Constants.VERSION_CODE.toString())
-            tokenProvider().takeIf { it.isNotEmpty() }?.let { header(HttpHeaders.Authorization, "Bearer $it") }
         }
+        // Not in defaultRequest: its headers are appended to per-request ones, so logout's explicit
+        // old-session token got merged with the current one ("Bearer old,Bearer new") -> 401.
+        install(createClientPlugin("BearerAuth") {
+            onRequest { request, _ ->
+                if (!request.headers.contains(HttpHeaders.Authorization)) {
+                    tokenProvider().takeIf { it.isNotEmpty() }
+                        ?.let { request.headers.append(HttpHeaders.Authorization, "Bearer $it") }
+                }
+            }
+        })
         HttpResponseValidator {
             validateResponse { response ->
                 val isLogin = response.call.request.url.encodedPath.contains("/auth/")
@@ -65,7 +75,6 @@ class BackendApiService(
 
     override suspend fun logout(token: String, isTestEnv: Boolean) {
         api.post("${baseUrl(isTestEnv)}/auth/logout") {
-            headers.remove(HttpHeaders.Authorization)
             header(HttpHeaders.Authorization, "Bearer $token")
         }
     }

@@ -19,7 +19,7 @@ class AuthRepository(
         appSettings.isTestEnv = key.trim() == TEST_KEY
         val response = try {
             api.login(keyholderName.trim(), key.trim())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             appSettings.isTestEnv = previous?.isTestEnv ?: false
             throw e
         }
@@ -42,7 +42,8 @@ class AuthRepository(
             api.logout(session.token, session.isTestEnv)
         } catch (e: CancellationException) {
             throw e
-        } catch (_: Exception) {
+        } catch (_: Throwable) {
+            // Throwable, not Exception: on Wasm network failures surface as kotlin.Error.
         }
     }
 
