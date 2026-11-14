@@ -53,10 +53,11 @@ class EnterPasswordViewModel : ViewModel(), KoinComponent {
                         throw e
                     } catch (e: EquipNotFoundException) {
                         EnterPasswordScreenEffect.ShowToast(e.message ?: "Ключ неверный")
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         EnterPasswordScreenEffect.ShowToast("Нет связи с сервером: ${e.message ?: ""}")
+                    } finally {
+                        _viewState.update { it.copy(isLoading = false) }
                     }
-                    _viewState.update { it.copy(isLoading = false) }
                     _viewEffect.send(effect)
                 }
             }

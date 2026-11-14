@@ -54,7 +54,7 @@ class UsersSearchViewModel : ViewModel(), KoinComponent {
                 }
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 _viewState.update {
                     it.copy(
                         users = emptyList(),

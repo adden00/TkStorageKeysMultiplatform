@@ -53,7 +53,7 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                             )
                         }
 
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(NewEquipScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isAdding = false) }
@@ -84,7 +84,7 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                         } else {
                             _viewEffect.send(NewEquipScreenEffect.ShowToast("Ошибка получения свободного id! повторите попытку или добавьте id вручную"))
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(NewEquipScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isReceivingId = false) }
@@ -118,7 +118,7 @@ class NewEquipViewModel : ViewModel(), KoinComponent {
                                 NewEquipScreenEffect.ShowToast("Ошибка Изменения номера! Такой номер уже существует!")
                             )
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(NewEquipScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isAdding = false) }

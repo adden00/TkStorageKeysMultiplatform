@@ -45,7 +45,7 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
                             _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Не найдено!"))
                         }
                         _viewState.update { it.copy(currentEquipList = listOf(), enteredSearchText = "") }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isSearching = false) }
@@ -61,7 +61,7 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
                     try {
                         val items = storageRepository.search(state.lastQuery)
                         _viewState.update { it.copy(currentEquipList = items) }
-                    } catch (_: Exception) {
+                    } catch (_: Throwable) {
                         // фоновое обновление: при ошибке оставляем прежний список, пользователь его и видел
                     } finally {
                         _viewState.update { it.copy(isSearching = false) }
@@ -90,7 +90,7 @@ class PeopleSearchViewModel : ViewModel(), KoinComponent {
                         if (!e.message.isNullOrEmpty()) {
                             _viewEffect.send(PeopleSearchScreenEffect.ShowToast(e.message))
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(PeopleSearchScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isReturning = false) }
