@@ -60,7 +60,7 @@ class PersonDetailsViewModel : ViewModel(), KoinComponent {
                         _viewState.update { it.copy(user = user, items = items, isNotFound = false) }
                     } catch (e: EquipNotFoundException) {
                         _viewState.update { it.copy(user = null, items = emptyList(), isNotFound = true) }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(PersonDetailsScreenEffect.ShowToast("Ошибка загрузки: ${e.message ?: ""}"))
                     } finally {
                         _viewState.update { it.copy(isLoading = false) }
@@ -83,7 +83,7 @@ class PersonDetailsViewModel : ViewModel(), KoinComponent {
                     } catch (e: EquipNotFoundException) {
                         _viewState.update { it.copy(isReturning = false) }
                         _viewEffect.send(PersonDetailsScreenEffect.ShowToast(e.message ?: "${event.item.id} не найдено!"))
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewState.update { it.copy(isReturning = false) }
                         _viewEffect.send(PersonDetailsScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     }

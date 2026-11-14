@@ -58,7 +58,7 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                                 )
                             }
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update { it.copy(isSearching = false) }
@@ -99,7 +99,7 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                             _viewEffect.send(ReceptionScreenEffect.ShowToast("${viewEvent.id} не найдено!"))
                             _viewState.update { it.copy(currentEquipItem = null, error = "", enteredSearchText = "") }
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Exception! ${e.message ?: "no message"}"))
                     } finally {
                         _viewState.update {
@@ -142,7 +142,7 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                     try {
                         val bytes = storageRepository.exportItems(viewEvent.format)
                         _viewEffect.send(ReceptionScreenEffect.SaveFile(bytes, viewEvent.format.extension))
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
                     } finally {
                         _viewState.update { it.copy(exportingFormat = null) }
@@ -157,7 +157,7 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                     try {
                         storageRepository.exportToSheets()
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Экспорт в Google Sheets выполнен"))
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка экспорта: ${e.message ?: ""}"))
                     } finally {
                         _viewState.update { it.copy(isExportingToSheets = false) }
@@ -178,7 +178,7 @@ class ReceptionViewModel : ViewModel(), KoinComponent {
                     try {
                         val result = storageRepository.importUsers()
                         _viewEffect.send(ReceptionScreenEffect.ShowToast(result))
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         _viewEffect.send(ReceptionScreenEffect.ShowToast("Ошибка обновления справочника: ${e.message ?: ""}"))
                     } finally {
                         _viewState.update { it.copy(isImportingUsers = false) }

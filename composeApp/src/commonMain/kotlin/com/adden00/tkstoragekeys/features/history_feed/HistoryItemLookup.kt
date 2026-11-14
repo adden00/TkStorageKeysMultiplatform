@@ -16,6 +16,6 @@ suspend fun StorageRepository.lookupHistoryItem(itemId: String): HistoryItemLook
     throw e
 } catch (e: EquipNotFoundException) {
     HistoryItemLookup.Failed(e.message ?: "$itemId не найдено")
-} catch (e: Exception) {
+} catch (e: Throwable) {
     HistoryItemLookup.Failed("Exception! ${e.message ?: "no message"}")
 }

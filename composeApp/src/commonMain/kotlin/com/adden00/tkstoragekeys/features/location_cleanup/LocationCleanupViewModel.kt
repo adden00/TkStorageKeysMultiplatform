@@ -61,7 +61,7 @@ class LocationCleanupViewModel : ViewModel(), KoinComponent {
                     // крупные группы первыми: пять верхних закрывают больше половины работы
                     .sortedWith(compareByDescending<LocationGroup> { it.count }.thenBy { it.location })
                 _viewState.update { it.copy(groups = groups, error = "") }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 val message = e.message.orEmpty()
                 _viewEffect.send(LocationCleanupScreenEffect.ShowToast("Не удалось загрузить список: $message"))
                 _viewState.update { it.copy(error = message.ifEmpty { "Ошибка" }) }
@@ -85,7 +85,7 @@ class LocationCleanupViewModel : ViewModel(), KoinComponent {
                         item = item.copy(locationUserId = userId),
                         historyAction = HISTORY_ACTION
                     )
-                } catch (_: Exception) {
+                } catch (_: Throwable) {
                     failed.add(item)
                 }
                 _viewState.update { it.copy(applyingDone = it.applyingDone + 1) }
